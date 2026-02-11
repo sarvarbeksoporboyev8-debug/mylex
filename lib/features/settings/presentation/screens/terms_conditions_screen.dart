@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_typography.dart';
 import '../../../../core/localization/app_strings.dart';
 import '../../data/terms_provider.dart';
+import '../widgets/settings_widgets.dart';
 
 class TermsConditionsScreen extends ConsumerWidget {
   const TermsConditionsScreen({super.key});
@@ -18,8 +16,10 @@ class TermsConditionsScreen extends ConsumerWidget {
       body: SafeArea(
         child: Column(
           children: [
-            // Header - h-[60px], pb-[12px] pt-[8px] px-[20px]
-            _buildHeader(context, ref),
+            // Header
+            SettingsScreenHeader(
+              title: ref.watch(stringsProvider).termsAndConditions,
+            ),
             // Content - white background, p-[20px]
             Expanded(
               child: Container(
@@ -88,51 +88,6 @@ class TermsConditionsScreen extends ConsumerWidget {
                   loading: () => _buildLoadingState(),
                   error: (error, stack) => _buildErrorState(ref),
                 ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader(BuildContext context, WidgetRef ref) {
-    final strings = ref.watch(stringsProvider);
-    return SizedBox(
-      height: 60,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Align(
-              alignment: Alignment.centerLeft,
-              child: GestureDetector(
-                onTap: () => context.pop(),
-                child: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    border: Border.all(color: const Color(0xFFEDEDED)),
-                    borderRadius: BorderRadius.circular(10),
-                    color: Colors.white,
-                  ),
-                  child: const Icon(
-                    PhosphorIconsRegular.caretLeft,
-                    size: 20,
-                    color: Color(0xFF101010),
-                  ),
-                ),
-              ),
-            ),
-            Text(
-              strings.termsAndConditions,
-              style: const TextStyle(
-                fontFamily: 'Onest',
-                fontWeight: FontWeight.w500,
-                fontSize: 18,
-                height: 1.5,
-                color: Color(0xFF101010),
               ),
             ),
           ],

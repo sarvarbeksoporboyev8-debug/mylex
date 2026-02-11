@@ -6,3 +6,4 @@ export 'settings_menu_item.dart';
 export 'settings_profile_header.dart';
 export 'settings_payment_card.dart';
 export 'language_selector_modal.dart';
+export 'settings_screen_header.dart';

@@ -4,8 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../../../../core/routing/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_typography.dart';
 import '../../../../core/localization/app_strings.dart';
+import '../widgets/settings_widgets.dart';
 
 class SecurityScreen extends ConsumerStatefulWidget {
   const SecurityScreen({super.key});
@@ -25,8 +25,10 @@ class _SecurityScreenState extends ConsumerState<SecurityScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Header - h-[60px], pb-[12px] pt-[8px] px-[20px]
-            _buildHeader(context),
+            // Header
+            SettingsScreenHeader(
+              title: ref.watch(stringsProvider).security,
+            ),
             // Content - single scroll area on app background
             Expanded(
               child: SingleChildScrollView(
@@ -46,50 +48,6 @@ class _SecurityScreenState extends ConsumerState<SecurityScreen> {
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
-    return SizedBox(
-      height: 60,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Align(
-              alignment: Alignment.centerLeft,
-              child: GestureDetector(
-                onTap: () => context.pop(),
-                child: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    border: Border.all(color: const Color(0xFFEDEDED)),
-                    borderRadius: BorderRadius.circular(10),
-                    color: Colors.white,
-                  ),
-                  child: const Icon(
-                    PhosphorIconsRegular.caretLeft,
-                    size: 20,
-                    color: Color(0xFF101010),
-                  ),
-                ),
-              ),
-            ),
-            Text(
-              ref.watch(stringsProvider).security,
-              style: const TextStyle(
-                fontFamily: 'Onest',
-                fontWeight: FontWeight.w500,
-                fontSize: 18,
-                height: 1.5,
-                color: Color(0xFF101010),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildSecurityCard() {
     final strings = ref.watch(stringsProvider);
     return Container(
@@ -100,85 +58,60 @@ class _SecurityScreenState extends ConsumerState<SecurityScreen> {
       ),
       child: Column(
         children: [
-          _buildSecurityRow(
+          SettingsMenuItem(
             icon: PhosphorIconsRegular.deviceMobile,
             label: strings.twoFactorAuthentication,
+            fontSize: 14,
+            height: 52,
+            horizontalPadding: 16,
+            iconTextGap: 12,
             trailing: const Icon(
               PhosphorIconsRegular.caretRight,
               size: 20,
               color: Color(0xFF878787),
             ),
-            onTap: () {
-              context.push(AppRoutes.twoFactorChangeEmail);
-            },
+            onTap: () => context.push(AppRoutes.twoFactorChangeEmail),
           ),
           _buildDivider(),
-          _buildSecurityRow(
+          SettingsMenuItem(
             icon: PhosphorIconsRegular.key,
             label: strings.resetPassword,
+            fontSize: 14,
+            height: 52,
+            horizontalPadding: 16,
+            iconTextGap: 12,
             trailing: const Icon(
               PhosphorIconsRegular.caretRight,
               size: 20,
               color: Color(0xFF878787),
             ),
-            onTap: () {
-              context.push(AppRoutes.forgotPassword);
-            },
+            onTap: () => context.push(AppRoutes.forgotPassword),
           ),
           _buildDivider(),
-          _buildSecurityRow(
+          SettingsMenuItem(
             icon: PhosphorIconsRegular.scan,
             label: strings.useFaceIdToLogin,
+            fontSize: 14,
+            height: 52,
+            horizontalPadding: 16,
+            iconTextGap: 12,
             trailing: _buildToggle(_faceIdEnabled, (value) {
               setState(() => _faceIdEnabled = value);
             }),
           ),
           _buildDivider(),
-          _buildSecurityRow(
+          SettingsMenuItem(
             icon: PhosphorIconsRegular.lock,
             label: strings.appLock,
+            fontSize: 14,
+            height: 52,
+            horizontalPadding: 16,
+            iconTextGap: 12,
             trailing: _buildToggle(_appLockEnabled, (value) {
               setState(() => _appLockEnabled = value);
             }),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildSecurityRow({
-    required IconData icon,
-    required String label,
-    Widget? trailing,
-    VoidCallback? onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            Icon(
-              icon,
-              size: 20,
-              color: const Color(0xFF101010),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                label,
-                style: TextStyle(
-                  fontFamily: 'Onest',
-                  fontWeight: FontWeight.w500,
-                  fontSize: 14,
-                  height: 1.5,
-                  color: const Color(0xFF101010),
-                ),
-              ),
-            ),
-            if (trailing != null) trailing,
-          ],
-        ),
       ),
     );
   }

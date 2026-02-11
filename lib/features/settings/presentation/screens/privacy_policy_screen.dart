@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_typography.dart';
+
 import '../../../../core/localization/app_strings.dart';
+import '../../../../core/theme/theme.dart';
+import '../../../../core/theme/spacing_tokens.dart';
 import '../../data/privacy_provider.dart';
 
 class PrivacyPolicyScreen extends ConsumerWidget {
@@ -13,81 +14,24 @@ class PrivacyPolicyScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final strings = ref.watch(stringsProvider);
+    final privacyAsyncValue = ref.watch(privacyContentProvider);
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.backgroundSecondary,
       body: SafeArea(
         child: Column(
           children: [
-            // Header - h-[60px], pb-[12px] pt-[8px] px-[20px]
-            _buildHeader(context, ref),
-            // Content - white background, p-[20px]
+            // Header
+            _buildHeader(context, strings),
+            // Content
             Expanded(
-              child: Container(
-                color: Colors.white,
-                child: ref.watch(privacyContentProvider).when(
-                  data: (content) {
-                    if (content == null || content.isEmpty) {
-                      return _buildErrorState(ref);
-                    }
-                    return SingleChildScrollView(
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          MarkdownBody(
-                            data: content,
-                            styleSheet: MarkdownStyleSheet(
-                              p: const TextStyle(
-                                fontFamily: 'Onest',
-                                fontWeight: FontWeight.w400,
-                                fontSize: 16,
-                                height: 1.5,
-                                color: Color(0xFF606060),
-                              ),
-                              h1: const TextStyle(
-                                fontFamily: 'Onest',
-                                fontWeight: FontWeight.w600,
-                                fontSize: 16,
-                                height: 1.5,
-                                color: Color(0xFF101010),
-                              ),
-                              h2: const TextStyle(
-                                fontFamily: 'Onest',
-                                fontWeight: FontWeight.w600,
-                                fontSize: 16,
-                                height: 1.5,
-                                color: Color(0xFF101010),
-                              ),
-                              h3: const TextStyle(
-                                fontFamily: 'Onest',
-                                fontWeight: FontWeight.w500,
-                                fontSize: 16,
-                                height: 1.5,
-                                color: Color(0xFF101010),
-                              ),
-                              strong: const TextStyle(
-                                fontFamily: 'Onest',
-                                fontWeight: FontWeight.w600,
-                                fontSize: 16,
-                                color: Color(0xFF101010),
-                              ),
-                              listBullet: const TextStyle(
-                                fontFamily: 'Onest',
-                                fontWeight: FontWeight.w400,
-                                fontSize: 16,
-                                height: 1.5,
-                                color: Color(0xFF606060),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 80),
-                        ],
-                      ),
-                    );
-                  },
-                  loading: () => _buildLoadingState(),
-                  error: (error, stack) => _buildErrorState(ref),
-                ),
+              child: privacyAsyncValue.when(
+                data: (content) => content != null && content.isNotEmpty
+                    ? _buildContent(content)
+                    : _buildEmptyState(strings),
+                loading: () => _buildLoadingState(),
+                error: (error, stack) => _buildErrorState(strings, error.toString()),
               ),
             ),
           ],
@@ -96,12 +40,11 @@ class PrivacyPolicyScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildHeader(BuildContext context, WidgetRef ref) {
-    final strings = ref.watch(stringsProvider);
+  Widget _buildHeader(BuildContext context, AppStrings strings) {
     return SizedBox(
-      height: 60,
+      height: SpacingTokens.spacing60,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
+        padding: SpacingTokens.horizontalPadding20,
         child: Stack(
           alignment: Alignment.center,
           children: [
@@ -110,53 +53,122 @@ class PrivacyPolicyScreen extends ConsumerWidget {
               child: GestureDetector(
                 onTap: () => context.pop(),
                 child: Container(
-                  width: 44,
-                  height: 44,
+                  width: SpacingTokens.spacing44,
+                  height: SpacingTokens.spacing44,
                   decoration: BoxDecoration(
                     border: Border.all(color: const Color(0xFFEDEDED)),
-                    borderRadius: BorderRadius.circular(10),
-                    color: Colors.white,
+                    borderRadius: SpacingTokens.borderRadius10,
+                    color: AppColors.cardBackground,
                   ),
                   child: const Icon(
                     PhosphorIconsRegular.caretLeft,
-                    size: 20,
-                    color: Color(0xFF101010),
+                    size: SpacingTokens.iconSize20,
+                    color: AppColors.textPrimary,
                   ),
                 ),
               ),
             ),
             Text(
               strings.privacyPolicy,
-              style: const TextStyle(
-                fontFamily: 'Onest',
+              style: AppTypography.headline4.copyWith(
                 fontWeight: FontWeight.w500,
-                fontSize: 18,
-                height: 1.5,
-                color: Color(0xFF101010),
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContent(String markdownContent) {
+    return SingleChildScrollView(
+      padding: SpacingTokens.padding20,
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: SpacingTokens.maxContentWidth),
+        padding: SpacingTokens.padding20,
+        decoration: BoxDecoration(
+          color: AppColors.cardBackground,
+          borderRadius: SpacingTokens.borderRadius14,
+          border: Border.all(color: const Color(0xFFEDEDED)),
+        ),
+        child: Markdown(
+          data: markdownContent,
+          selectable: true,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          styleSheet: MarkdownStyleSheet(
+            h1: AppTypography.headline3.copyWith(
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
+            ),
+            h2: AppTypography.headline4.copyWith(
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
+            ),
+            h3: AppTypography.bodyLarge.copyWith(
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
+            ),
+            p: AppTypography.bodyMedium.copyWith(
+              color: AppColors.textSecondary,
+              height: 1.6,
+            ),
+            listBullet: AppTypography.bodyMedium.copyWith(
+              color: AppColors.accent,
+            ),
+            blockSpacing: SpacingTokens.spacing12,
+          ),
         ),
       ),
     );
   }
 
   Widget _buildLoadingState() {
-    return const Center(
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CircularProgressIndicator(
+            color: AppColors.accent,
+          ),
+          SpacingTokens.verticalGap16,
+          Text(
+            'Loading Privacy Policy...',
+            style: AppTypography.bodyMedium.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorState(AppStrings strings, String error) {
+    return Center(
       child: Padding(
-        padding: EdgeInsets.all(40),
+        padding: SpacingTokens.padding20,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(),
-            SizedBox(height: 16),
+            Icon(
+              PhosphorIconsRegular.warningCircle,
+              size: 64,
+              color: AppColors.error,
+            ),
+            SpacingTokens.verticalGap16,
             Text(
-              'Loading privacy policy...',
-              style: TextStyle(
-                fontFamily: 'Onest',
-                fontSize: 14,
-                color: Color(0xFF606060),
+              'Error loading Privacy Policy',
+              style: AppTypography.headline4.copyWith(
+                color: AppColors.textPrimary,
               ),
+            ),
+            SpacingTokens.verticalGap8,
+            Text(
+              error,
+              style: AppTypography.bodyMedium.copyWith(
+                color: AppColors.textSecondary,
+              ),
+              textAlign: TextAlign.center,
             ),
           ],
         ),
@@ -164,51 +176,24 @@ class PrivacyPolicyScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildErrorState(WidgetRef ref) {
+  Widget _buildEmptyState(AppStrings strings) {
     return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(40),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(
-              Icons.error_outline,
-              size: 48,
-              color: Color(0xFF606060),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            PhosphorIconsRegular.shieldCheckered,
+            size: 64,
+            color: AppColors.textTertiary.withOpacity(0.5),
+          ),
+          SpacingTokens.verticalGap16,
+          Text(
+            'No Privacy Policy available',
+            style: AppTypography.headline4.copyWith(
+              color: AppColors.textSecondary,
             ),
-            const SizedBox(height: 16),
-            const Text(
-              'Failed to load privacy policy',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontFamily: 'Onest',
-                fontSize: 14,
-                color: Color(0xFF606060),
-              ),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () {
-                ref.invalidate(privacyContentProvider);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.accent,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              child: const Text(
-                'Retry',
-                style: TextStyle(
-                  fontFamily: 'Onest',
-                  fontSize: 14,
-                ),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

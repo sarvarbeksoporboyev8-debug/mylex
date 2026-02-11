@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+
 import '../../../../core/localization/app_strings.dart';
+import '../../../../core/theme/theme.dart';
+import '../../../../core/theme/spacing_tokens.dart';
 
 class TwoFactorChangeEmailScreen extends ConsumerStatefulWidget {
   const TwoFactorChangeEmailScreen({super.key});
@@ -15,6 +18,8 @@ class TwoFactorChangeEmailScreen extends ConsumerStatefulWidget {
 class _TwoFactorChangeEmailScreenState
     extends ConsumerState<TwoFactorChangeEmailScreen> {
   final _emailController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -24,83 +29,52 @@ class _TwoFactorChangeEmailScreenState
 
   @override
   Widget build(BuildContext context) {
+    final strings = ref.watch(stringsProvider);
     final isFilled = _emailController.text.trim().isNotEmpty;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.cardBackground,
       body: SafeArea(
         child: Column(
           children: [
             // Header
-            _buildHeader(context),
+            _buildHeader(context, strings),
             // Content
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 12),
-                    _buildEmailField(),
-                    const SizedBox(height: 24),
-                    _buildPrimaryButton(
-                      label: ref.watch(stringsProvider).changeEmail,
-                      enabled: isFilled,
-                      onPressed: isFilled ? () {} : null,
-                    ),
-                  ],
+                padding: EdgeInsets.fromLTRB(
+                  SpacingTokens.spacing20,
+                  SpacingTokens.spacing12,
+                  SpacingTokens.spacing20,
+                  SpacingTokens.spacing24,
+                ),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SpacingTokens.verticalGap12,
+                      _buildEmailField(strings),
+                      SpacingTokens.verticalGap24,
+                      _buildSubmitButton(strings, isFilled),
+                    ],
+                  ),
                 ),
               ),
             ),
             // Terms text at bottom
-            Padding(
-              padding: EdgeInsets.fromLTRB(
-                20,
-                0,
-                20,
-                16 + MediaQuery.of(context).padding.bottom,
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    ref.watch(stringsProvider).byContinuingAgree,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontFamily: 'Onest',
-                      fontWeight: FontWeight.w400,
-                      fontSize: 14,
-                      height: 1.5,
-                      color: Color(0xFF606060),
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    ref.watch(stringsProvider).termsAndPrivacyPolicy,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontFamily: 'Onest',
-                      fontWeight: FontWeight.w400,
-                      fontSize: 14,
-                      height: 1.5,
-                      color: Color(0xFF606060),
-                      decoration: TextDecoration.underline,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            _buildTermsText(context, strings),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
+  Widget _buildHeader(BuildContext context, AppStrings strings) {
     return SizedBox(
-      height: 60,
+      height: SpacingTokens.spacing60,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
+        padding: SpacingTokens.horizontalPadding20,
         child: Stack(
           alignment: Alignment.center,
           children: [
@@ -109,29 +83,25 @@ class _TwoFactorChangeEmailScreenState
               child: GestureDetector(
                 onTap: () => context.pop(),
                 child: Container(
-                  width: 44,
-                  height: 44,
+                  width: SpacingTokens.spacing44,
+                  height: SpacingTokens.spacing44,
                   decoration: BoxDecoration(
                     border: Border.all(color: const Color(0xFFEDEDED)),
-                    borderRadius: BorderRadius.circular(10),
-                    color: Colors.white,
+                    borderRadius: SpacingTokens.borderRadius10,
+                    color: AppColors.cardBackground,
                   ),
                   child: const Icon(
                     PhosphorIconsRegular.caretLeft,
-                    size: 20,
-                    color: Color(0xFF101010),
+                    size: SpacingTokens.iconSize20,
+                    color: AppColors.textPrimary,
                   ),
                 ),
               ),
             ),
             Text(
-              ref.watch(stringsProvider).changeEmail,
-              style: const TextStyle(
-                fontFamily: 'Onest',
+              strings.changeEmail,
+              style: AppTypography.headline4.copyWith(
                 fontWeight: FontWeight.w500,
-                fontSize: 18,
-                height: 1.5,
-                color: Color(0xFF101010),
               ),
             ),
           ],
@@ -140,89 +110,148 @@ class _TwoFactorChangeEmailScreenState
     );
   }
 
-  Widget _buildEmailField() {
+  Widget _buildEmailField(AppStrings strings) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          ref.watch(stringsProvider).email,
-          style: const TextStyle(
-            fontFamily: 'Onest',
+          strings.email,
+          style: AppTypography.bodyMedium.copyWith(
             fontWeight: FontWeight.w500,
-            fontSize: 14,
-            height: 1.5,
-            color: Color(0xFF101010),
+            color: AppColors.textPrimary,
           ),
         ),
-        const SizedBox(height: 8),
-        TextField(
+        SpacingTokens.verticalGap8,
+        TextFormField(
           controller: _emailController,
           keyboardType: TextInputType.emailAddress,
-          onChanged: (_) => setState(() {}),
           decoration: InputDecoration(
-            isDense: true,
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-            hintText: 'Placeholder',
-            hintStyle: const TextStyle(
-              fontFamily: 'Onest',
-              fontWeight: FontWeight.w400,
-              fontSize: 14,
-              height: 1.5,
-              color: Color(0xFF878787),
+            hintText: 'Enter your new email',
+            hintStyle: AppTypography.bodyMedium.copyWith(
+              color: AppColors.textTertiary,
             ),
+            filled: true,
+            fillColor: AppColors.backgroundSecondary,
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: SpacingTokens.borderRadius10,
               borderSide: const BorderSide(color: Color(0xFFEDEDED)),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: SpacingTokens.borderRadius10,
               borderSide: const BorderSide(color: Color(0xFFEDEDED)),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFF101010)),
+              borderRadius: SpacingTokens.borderRadius10,
+              borderSide: BorderSide(color: AppColors.accent, width: 2),
             ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: SpacingTokens.borderRadius10,
+              borderSide: BorderSide(color: AppColors.error),
+            ),
+            contentPadding: SpacingTokens.padding16,
           ),
+          validator: (value) {
+            if (value == null || value.trim().isEmpty) {
+              return 'Please enter an email';
+            }
+            if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+              return 'Please enter a valid email';
+            }
+            return null;
+          },
+          onChanged: (value) => setState(() {}),
         ),
       ],
     );
   }
 
-  Widget _buildPrimaryButton({
-    required String label,
-    required bool enabled,
-    VoidCallback? onPressed,
-  }) {
-    final bgColor = enabled ? const Color(0xFF101010) : const Color(0xFFEDEDED);
-    final textColor =
-        enabled ? Colors.white : const Color(0xFFC2C2C2);
-
+  Widget _buildSubmitButton(AppStrings strings, bool enabled) {
     return SizedBox(
       width: double.infinity,
+      height: SpacingTokens.spacing52,
       child: ElevatedButton(
-        onPressed: enabled ? onPressed : null,
+        onPressed: enabled && !_isLoading
+            ? () async {
+                if (_formKey.currentState?.validate() ?? false) {
+                  setState(() => _isLoading = true);
+                  // Simulate API call
+                  await Future.delayed(const Duration(seconds: 2));
+                  if (mounted) {
+                    setState(() => _isLoading = false);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Email changed successfully'),
+                        backgroundColor: AppColors.success,
+                      ),
+                    );
+                    context.pop();
+                  }
+                }
+              }
+            : null,
         style: ElevatedButton.styleFrom(
-          backgroundColor: bgColor,
-          disabledBackgroundColor: bgColor,
-          padding: const EdgeInsets.symmetric(vertical: 14),
+          backgroundColor: AppColors.accent,
+          foregroundColor: Colors.white,
+          disabledBackgroundColor: AppColors.textTertiary.withOpacity(0.3),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: SpacingTokens.borderRadius10,
           ),
-          elevation: enabled ? 0 : 0,
+          elevation: 0,
         ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontFamily: 'Onest',
-            fontWeight: FontWeight.w500,
-            fontSize: 16,
-            height: 1.5,
-            color: textColor,
+        child: _isLoading
+            ? SizedBox(
+                width: SpacingTokens.spacing20,
+                height: SpacingTokens.spacing20,
+                child: const CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              )
+            : Text(
+                strings.changeEmail,
+                style: AppTypography.bodyMedium.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+      ),
+    );
+  }
+
+  Widget _buildTermsText(BuildContext context, AppStrings strings) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        SpacingTokens.spacing20,
+        0,
+        SpacingTokens.spacing20,
+        SpacingTokens.spacing16 + MediaQuery.of(context).padding.bottom,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            strings.byContinuingAgree,
+            textAlign: TextAlign.center,
+            style: AppTypography.bodySmall.copyWith(
+              color: AppColors.textSecondary,
+            ),
           ),
-        ),
+          SpacingTokens.verticalGap2,
+          GestureDetector(
+            onTap: () {
+              // Navigate to terms and privacy
+            },
+            child: Text(
+              strings.termsAndPrivacyPolicy,
+              textAlign: TextAlign.center,
+              style: AppTypography.bodySmall.copyWith(
+                color: AppColors.textSecondary,
+                decoration: TextDecoration.underline,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 }
-

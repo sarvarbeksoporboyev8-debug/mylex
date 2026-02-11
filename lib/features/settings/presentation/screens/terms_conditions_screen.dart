@@ -3,8 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_typography.dart';
+import '../../../../core/theme/theme.dart';
 import '../../../../core/localization/app_strings.dart';
 import '../../data/terms_provider.dart';
 

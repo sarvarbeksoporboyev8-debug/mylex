@@ -3,9 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../../../../core/routing/app_routes.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_typography.dart';
+import '../../../../core/theme/theme.dart';
 import '../../../../core/localization/app_strings.dart';
+import '../../domain/providers/settings_providers.dart';
+import '../widgets/settings_widgets.dart';
 
 class SecurityScreen extends ConsumerStatefulWidget {
   const SecurityScreen({super.key});
@@ -15,22 +16,23 @@ class SecurityScreen extends ConsumerStatefulWidget {
 }
 
 class _SecurityScreenState extends ConsumerState<SecurityScreen> {
-  bool _faceIdEnabled = false;
-  bool _appLockEnabled = true;
-
   @override
   Widget build(BuildContext context) {
+    final settingsState = ref.watch(settingsStateProvider);
+    final screenSize = MediaQuery.of(context).size;
+    final isTablet = screenSize.width > 600;
+
     return Scaffold(
       backgroundColor: AppColors.backgroundSecondary,
       body: SafeArea(
         child: Column(
           children: [
-            // Header - h-[60px], pb-[12px] pt-[8px] px-[20px]
             _buildHeader(context),
-            // Content - single scroll area on app background
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(20),
+                padding: EdgeInsets.all(
+                  isTablet ? SpacingTokens.spacing32 : SpacingTokens.spacing20,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -50,7 +52,7 @@ class _SecurityScreenState extends ConsumerState<SecurityScreen> {
     return SizedBox(
       height: 60,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
+        padding: SpacingTokens.paddingHorizontal20,
         child: Stack(
           alignment: Alignment.center,
           children: [
@@ -63,12 +65,12 @@ class _SecurityScreenState extends ConsumerState<SecurityScreen> {
                   height: 44,
                   decoration: BoxDecoration(
                     border: Border.all(color: const Color(0xFFEDEDED)),
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: SpacingTokens.borderRadiusLarge,
                     color: Colors.white,
                   ),
                   child: const Icon(
                     PhosphorIconsRegular.caretLeft,
-                    size: 20,
+                    size: SpacingTokens.iconSize,
                     color: Color(0xFF101010),
                   ),
                 ),
@@ -92,102 +94,52 @@ class _SecurityScreenState extends ConsumerState<SecurityScreen> {
 
   Widget _buildSecurityCard() {
     final strings = ref.watch(stringsProvider);
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFF5F5F5)),
-      ),
+    final settingsState = ref.watch(settingsStateProvider);
+
+    return SettingsSection(
       child: Column(
         children: [
-          _buildSecurityRow(
+          SettingsMenuItem(
             icon: PhosphorIconsRegular.deviceMobile,
             label: strings.twoFactorAuthentication,
             trailing: const Icon(
               PhosphorIconsRegular.caretRight,
-              size: 20,
+              size: SpacingTokens.iconSize,
               color: Color(0xFF878787),
             ),
-            onTap: () {
-              context.push(AppRoutes.twoFactorChangeEmail);
-            },
+            onTap: () => context.push(AppRoutes.twoFactorChangeEmail),
           ),
-          _buildDivider(),
-          _buildSecurityRow(
+          const SettingsMenuDivider(),
+          SettingsMenuItem(
             icon: PhosphorIconsRegular.key,
             label: strings.resetPassword,
             trailing: const Icon(
               PhosphorIconsRegular.caretRight,
-              size: 20,
+              size: SpacingTokens.iconSize,
               color: Color(0xFF878787),
             ),
-            onTap: () {
-              context.push(AppRoutes.forgotPassword);
-            },
+            onTap: () => context.push(AppRoutes.forgotPassword),
           ),
-          _buildDivider(),
-          _buildSecurityRow(
+          const SettingsMenuDivider(),
+          SettingsMenuItem(
             icon: PhosphorIconsRegular.scan,
             label: strings.useFaceIdToLogin,
-            trailing: _buildToggle(_faceIdEnabled, (value) {
-              setState(() => _faceIdEnabled = value);
-            }),
+            trailing: _buildToggle(
+              settingsState.faceIdEnabled,
+              (value) => ref.read(settingsStateProvider.notifier).toggleFaceId(value),
+            ),
           ),
-          _buildDivider(),
-          _buildSecurityRow(
+          const SettingsMenuDivider(),
+          SettingsMenuItem(
             icon: PhosphorIconsRegular.lock,
             label: strings.appLock,
-            trailing: _buildToggle(_appLockEnabled, (value) {
-              setState(() => _appLockEnabled = value);
-            }),
+            trailing: _buildToggle(
+              settingsState.appLockEnabled,
+              (value) => ref.read(settingsStateProvider.notifier).toggleAppLock(value),
+            ),
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildSecurityRow({
-    required IconData icon,
-    required String label,
-    Widget? trailing,
-    VoidCallback? onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            Icon(
-              icon,
-              size: 20,
-              color: const Color(0xFF101010),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                label,
-                style: TextStyle(
-                  fontFamily: 'Onest',
-                  fontWeight: FontWeight.w500,
-                  fontSize: 14,
-                  height: 1.5,
-                  color: const Color(0xFF101010),
-                ),
-              ),
-            ),
-            if (trailing != null) trailing,
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDivider() {
-    return Container(
-      height: 1,
-      color: const Color(0xFFF5F5F5),
-      margin: const EdgeInsets.symmetric(horizontal: 16),
     );
   }
 

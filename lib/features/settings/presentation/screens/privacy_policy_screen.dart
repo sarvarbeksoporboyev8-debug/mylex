@@ -143,7 +143,7 @@ class PrivacyPolicyScreen extends ConsumerWidget {
   Widget _buildLoadingState() {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(40),
+        padding: const EdgeInsets.all(AppSpacing.xxl + AppSpacing.l),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -166,7 +166,7 @@ class PrivacyPolicyScreen extends ConsumerWidget {
   Widget _buildErrorState(WidgetRef ref) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(40),
+        padding: const EdgeInsets.all(AppSpacing.xxl + AppSpacing.l),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [

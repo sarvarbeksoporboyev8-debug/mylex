@@ -140,95 +140,10 @@ class TermsConditionsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildHeaderCard(WidgetRef ref) {
-    final strings = ref.watch(stringsProvider);
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.fromLTRB(14, 16, 14, 14),
-        color: AppColors.accent.withOpacity(0.08),
-        child: Stack(
-          clipBehavior: Clip.none,
-          alignment: Alignment.center,
-          children: [
-            // decorative blobs
-            Positioned(
-              right: -20,
-              top: -30,
-              child: Container(
-                width: 120,
-                height: 120,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.35),
-                  shape: BoxShape.circle,
-                ),
-              ),
-            ),
-            Positioned(
-              left: -30,
-              bottom: -40,
-              child: Container(
-                width: 140,
-                height: 140,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.25),
-                  shape: BoxShape.circle,
-                ),
-              ),
-            ),
-            // actual content - centered
-            Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  RichText(
-                    textAlign: TextAlign.center,
-                    text: TextSpan(
-                      style: const TextStyle(
-                        fontFamily: 'Onest',
-                        fontWeight: FontWeight.w600,
-                        fontSize: 20,
-                        height: 1.5,
-                        color: Color(0xFF101010),
-                      ),
-                      children: const [
-                        TextSpan(text: 'Tabssi '),
-                        // The actual "Terms & Conditions" text is in the header title;
-                        // keeping this static to avoid non-const issues inside const TextSpan.
-                        TextSpan(
-                          text: 'Term & Condition',
-                          style: TextStyle(color: AppColors.accent),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    'Last Updated: May 15, 2025',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontFamily: 'Onest',
-                      fontWeight: FontWeight.w500,
-                      fontSize: 12,
-                      height: 1.5,
-                      color: Color(0xFF383838),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildLoadingState() {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(40),
+        padding: const EdgeInsets.all(AppSpacing.xxl + AppSpacing.l),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -251,7 +166,7 @@ class TermsConditionsScreen extends ConsumerWidget {
   Widget _buildErrorState(WidgetRef ref) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(40),
+        padding: const EdgeInsets.all(AppSpacing.xxl + AppSpacing.l),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [

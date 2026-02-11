@@ -3,8 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../../../../core/routing/app_routes.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/theme.dart';
 import '../../../../core/localization/app_strings.dart';
+import '../../domain/providers/settings_providers.dart';
 import '../widgets/settings_widgets.dart';
 
 class SecurityScreen extends ConsumerStatefulWidget {
@@ -15,24 +16,22 @@ class SecurityScreen extends ConsumerStatefulWidget {
 }
 
 class _SecurityScreenState extends ConsumerState<SecurityScreen> {
-  bool _faceIdEnabled = false;
-  bool _appLockEnabled = true;
-
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+    final isTablet = screenSize.width > 600;
+
     return Scaffold(
       backgroundColor: AppColors.backgroundSecondary,
       body: SafeArea(
         child: Column(
           children: [
-            // Header
-            SettingsScreenHeader(
-              title: ref.watch(stringsProvider).security,
-            ),
-            // Content - single scroll area on app background
+            _buildHeader(context),
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(20),
+                padding: EdgeInsets.all(
+                  isTablet ? SpacingTokens.spacing32 : SpacingTokens.spacing20,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -48,14 +47,55 @@ class _SecurityScreenState extends ConsumerState<SecurityScreen> {
     );
   }
 
+  Widget _buildHeader(BuildContext context) {
+    return SizedBox(
+      height: 60,
+      child: Padding(
+        padding: SpacingTokens.paddingHorizontal20,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Align(
+              alignment: Alignment.centerLeft,
+              child: GestureDetector(
+                onTap: () => context.pop(),
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    border: Border.all(color: const Color(0xFFEDEDED)),
+                    borderRadius: SpacingTokens.borderRadiusLarge,
+                    color: Colors.white,
+                  ),
+                  child: const Icon(
+                    PhosphorIconsRegular.caretLeft,
+                    size: SpacingTokens.iconSize,
+                    color: Color(0xFF101010),
+                  ),
+                ),
+              ),
+            ),
+            Text(
+              ref.watch(stringsProvider).security,
+              style: const TextStyle(
+                fontFamily: 'Onest',
+                fontWeight: FontWeight.w500,
+                fontSize: 18,
+                height: 1.5,
+                color: Color(0xFF101010),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildSecurityCard() {
     final strings = ref.watch(stringsProvider);
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFF5F5F5)),
-      ),
+    final settingsState = ref.watch(settingsStateProvider);
+
+    return SettingsSection(
       child: Column(
         children: [
           SettingsMenuItem(
@@ -67,12 +107,12 @@ class _SecurityScreenState extends ConsumerState<SecurityScreen> {
             iconTextGap: 12,
             trailing: const Icon(
               PhosphorIconsRegular.caretRight,
-              size: 20,
+              size: SpacingTokens.iconSize,
               color: Color(0xFF878787),
             ),
             onTap: () => context.push(AppRoutes.twoFactorChangeEmail),
           ),
-          _buildDivider(),
+          const SettingsMenuDivider(),
           SettingsMenuItem(
             icon: PhosphorIconsRegular.key,
             label: strings.resetPassword,
@@ -82,45 +122,31 @@ class _SecurityScreenState extends ConsumerState<SecurityScreen> {
             iconTextGap: 12,
             trailing: const Icon(
               PhosphorIconsRegular.caretRight,
-              size: 20,
+              size: SpacingTokens.iconSize,
               color: Color(0xFF878787),
             ),
             onTap: () => context.push(AppRoutes.forgotPassword),
           ),
-          _buildDivider(),
+          const SettingsMenuDivider(),
           SettingsMenuItem(
             icon: PhosphorIconsRegular.scan,
             label: strings.useFaceIdToLogin,
-            fontSize: 14,
-            height: 52,
-            horizontalPadding: 16,
-            iconTextGap: 12,
-            trailing: _buildToggle(_faceIdEnabled, (value) {
-              setState(() => _faceIdEnabled = value);
-            }),
+            trailing: _buildToggle(
+              settingsState.faceIdEnabled,
+              (value) => ref.read(settingsStateProvider.notifier).toggleFaceId(value),
+            ),
           ),
-          _buildDivider(),
+          const SettingsMenuDivider(),
           SettingsMenuItem(
             icon: PhosphorIconsRegular.lock,
             label: strings.appLock,
-            fontSize: 14,
-            height: 52,
-            horizontalPadding: 16,
-            iconTextGap: 12,
-            trailing: _buildToggle(_appLockEnabled, (value) {
-              setState(() => _appLockEnabled = value);
-            }),
+            trailing: _buildToggle(
+              settingsState.appLockEnabled,
+              (value) => ref.read(settingsStateProvider.notifier).toggleAppLock(value),
+            ),
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildDivider() {
-    return Container(
-      height: 1,
-      color: const Color(0xFFF5F5F5),
-      margin: const EdgeInsets.symmetric(horizontal: 16),
     );
   }
 

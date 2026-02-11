@@ -2,69 +2,42 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/theme.dart';
 import '../../../../core/localization/app_language.dart';
 import '../../../../core/localization/app_strings.dart';
 
-/// A reusable language selector modal for settings screens.
-/// 
-/// This widget displays a bottom sheet with a list of available languages,
-/// allowing users to select their preferred language.
+/// A reusable language selector modal bottom sheet.
+/// Displays available languages with flags and allows selection.
 class LanguageSelectorModal extends ConsumerWidget {
-  /// Current selected language
   final AppLanguage currentLanguage;
-  
-  /// Localized strings
-  final AppStrings strings;
-  
-  /// Row height
-  final double rowHeight;
-  
-  /// Title font size
-  final double titleFontSize;
-  
-  /// Row font size
-  final double fontSize;
-  
-  /// Horizontal padding
-  final double horizontalPadding;
-  
-  /// Icon-text gap
-  final double iconTextGap;
 
   const LanguageSelectorModal({
     super.key,
     required this.currentLanguage,
-    required this.strings,
-    this.rowHeight = 52.0,
-    this.titleFontSize = 18.0,
-    this.fontSize = 14.0,
-    this.horizontalPadding = 20.0,
-    this.iconTextGap = 8.0,
   });
 
-  /// Shows the language selector modal
-  static Future<void> show({
-    required BuildContext context,
-    required WidgetRef ref,
-    required AppStrings strings,
-    required AppLanguage currentLanguage,
-  }) {
+  /// Show the language selector modal
+  static Future<void> show(
+    BuildContext context,
+    WidgetRef ref,
+    AppLanguage currentLanguage,
+  ) {
     return showModalBottomSheet(
       context: context,
       backgroundColor: const Color(0xFFFDFCF8),
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(SpacingTokens.spacing16),
+        ),
       ),
-      builder: (ctx) => LanguageSelectorModal(
-        currentLanguage: currentLanguage,
-        strings: strings,
-      ),
+      builder: (ctx) => LanguageSelectorModal(currentLanguage: currentLanguage),
     );
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final strings = ref.watch(stringsProvider);
+
     return SafeArea(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -81,7 +54,7 @@ class LanguageSelectorModal extends ConsumerWidget {
                     child: GestureDetector(
                       onTap: () => Navigator.pop(context),
                       behavior: HitTestBehavior.opaque,
-                      child: SizedBox(
+                      child: const SizedBox(
                         width: 44,
                         height: 44,
                         child: Center(
@@ -99,8 +72,8 @@ class LanguageSelectorModal extends ConsumerWidget {
                   child: Center(
                     child: Text(
                       strings.languageLabel,
-                      style: TextStyle(
-                        fontSize: titleFontSize,
+                      style: const TextStyle(
+                        fontSize: 18.0,
                         fontWeight: FontWeight.w600,
                         color: AppColors.textPrimary,
                         fontFamily: 'Roboto',
@@ -113,14 +86,14 @@ class LanguageSelectorModal extends ConsumerWidget {
             ),
           ),
           Container(height: 0.5, color: AppColors.divider),
-          const SizedBox(height: 8),
+          SpacingTokens.gapV8,
           // Language options
           ...AppLanguage.values.asMap().entries.map((entry) {
             final index = entry.key;
             final language = entry.value;
             final isSelected = language == currentLanguage;
             final isLast = index == AppLanguage.values.length - 1;
-            
+
             return Column(
               children: [
                 Material(
@@ -132,29 +105,33 @@ class LanguageSelectorModal extends ConsumerWidget {
                       Navigator.pop(context);
                     },
                     child: SizedBox(
-                      height: rowHeight,
+                      height: 52.0,
                       child: Padding(
-                        padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                        padding: SpacingTokens.paddingHorizontal20,
                         child: Row(
                           children: [
                             Text(
                               _getLanguageFlag(language),
                               style: const TextStyle(fontSize: 20),
                             ),
-                            SizedBox(width: iconTextGap),
+                            SpacingTokens.gapH8,
                             Expanded(
                               child: Text(
                                 language.nativeName,
                                 style: TextStyle(
-                                  fontSize: fontSize,
-                                  color: isSelected ? AppColors.accent : AppColors.textPrimary,
-                                  fontWeight: isSelected ? FontWeight.w500 : FontWeight.w400,
+                                  fontSize: 14.0,
+                                  color: isSelected
+                                      ? AppColors.accent
+                                      : AppColors.textPrimary,
+                                  fontWeight: isSelected
+                                      ? FontWeight.w500
+                                      : FontWeight.w400,
                                   fontFamily: 'Roboto',
                                 ),
                               ),
                             ),
                             if (isSelected)
-                              Icon(
+                              const Icon(
                                 PhosphorIconsRegular.check,
                                 size: 20,
                                 color: AppColors.accent,
@@ -167,9 +144,9 @@ class LanguageSelectorModal extends ConsumerWidget {
                 ),
                 if (!isLast)
                   Container(
-                    margin: EdgeInsets.only(
-                      left: horizontalPadding,
-                      right: horizontalPadding,
+                    margin: const EdgeInsets.only(
+                      left: SpacingTokens.spacing16,
+                      right: SpacingTokens.spacing16,
                     ),
                     height: 0.5,
                     color: AppColors.divider,
@@ -177,7 +154,7 @@ class LanguageSelectorModal extends ConsumerWidget {
               ],
             );
           }),
-          const SizedBox(height: 16),
+          SpacingTokens.gapV16,
         ],
       ),
     );

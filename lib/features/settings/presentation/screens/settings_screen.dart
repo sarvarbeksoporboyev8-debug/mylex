@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../../../core/theme/theme.dart';
 import '../../../../core/localization/app_language.dart';
 import '../../../../core/localization/app_strings.dart';
 import '../../../../core/routing/app_routes.dart';
+import '../../domain/providers/settings_providers.dart';
 import '../widgets/settings_widgets.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -20,20 +19,7 @@ class SettingsScreen extends ConsumerStatefulWidget {
 }
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
-  bool _notificationsEnabled = true;
   String _appVersion = '1.0.0';
-
-  // Layout constants tuned for BNPL settings design
-  static const double _horizontalInset = 20.0;
-  static const double _cardRadius = 14.0;
-  static const double _sectionRadius = 12.0;
-  static const double _rowHeight = 52.0;
-  static const double _iconSize = 20.0;
-  static const double _iconTextGap = 8.0;
-  static const double _titleFontSize = 18.0;
-  static const double _rowFontSize = 14.0;
-  static const double _sectionHeaderFontSize = 14.0;
-  static const double _dividerInset = 16.0;
 
   @override
   void initState() {
@@ -53,176 +39,73 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final strings = ref.watch(stringsProvider);
     final currentLanguage = ref.watch(languageProvider);
 
+    // Use MediaQuery for responsive design instead of hardcoded values
+    final screenSize = MediaQuery.of(context).size;
     final bottomPadding = MediaQuery.of(context).padding.bottom;
-    
+    final isTablet = screenSize.width > 600;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
-      body: CustomScrollView(
-        slivers: [
-          // Pinned profile header row
-          SliverAppBar(
-            pinned: true,
-            toolbarHeight: 88,
-            backgroundColor: Colors.white,
-            elevation: 0,
-            scrolledUnderElevation: 0,
-            surfaceTintColor: Colors.transparent,
-            automaticallyImplyLeading: false,
-            flexibleSpace: SafeArea(
-              bottom: false,
-              child: _buildPinnedProfileHeader(context),
-            ),
-            bottom: PreferredSize(
-              preferredSize: const Size.fromHeight(0.5),
-              child: Container(
-                height: 0.5,
-                color: const Color(0xFFEDEDED),
+      body: SafeArea(
+        child: CustomScrollView(
+          slivers: [
+            // Pinned profile header
+            SliverAppBar(
+              pinned: true,
+              toolbarHeight: isTablet ? 100 : 88,
+              backgroundColor: Colors.white,
+              elevation: 0,
+              scrolledUnderElevation: 0,
+              surfaceTintColor: Colors.transparent,
+              automaticallyImplyLeading: false,
+              flexibleSpace: SafeArea(
+                bottom: false,
+                child: ProfileHeader(
+                  name: 'Ali Muhajirin',
+                  phone: '+1 (555) 123-4567',
+                  onBackPressed: () => context.pop(),
+                  onEditPressed: () => context.push(AppRoutes.editProfile),
+                ),
               ),
-            ),
-          ),
-          // Content sections
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(
-              _horizontalInset,
-              16,
-              _horizontalInset,
-              0,
-            ),
-            sliver: SliverList(
-              delegate: SliverChildListDelegate([
-                _buildPersonalInfoSection(strings),
-                const SizedBox(height: 12),
-                _buildLinkedBanksSection(strings),
-                const SizedBox(height: 12),
-                _buildAppSettingsSection(strings, currentLanguage),
-                const SizedBox(height: 12),
-                _buildHelpLegalSection(strings),
-                const SizedBox(height: 24),
-                _buildLogoutRow(strings),
-                const SizedBox(height: 16),
-                Center(
-                  child: Text(
-                    'v$_appVersion',
-                    style: AppTypography.bodySmall.copyWith(
-                      color: AppColors.textTertiary,
-                    ),
-                  ),
-                ),
-                SizedBox(height: bottomPadding + 32),
-              ]),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPinnedProfileHeader(BuildContext context) {
-    return SettingsProfileHeader(
-      name: 'Ali Muhajirin',
-      phone: '+1 (555) 123-4567',
-      editLabel: ref.watch(stringsProvider).edit,
-      editRoute: AppRoutes.editProfile,
-      horizontalPadding: _horizontalInset,
-    );
-  }
-
-
-  Widget _buildAvailableToSpendCard() {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(_cardRadius),
-        border: Border.all(color: const Color(0xFFEDEDED)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Available to Spent',
-              style: AppTypography.bodyMedium.copyWith(
-                color: const Color(0xFF101010),
-              ),
-            ),
-            const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  '\$512.23 used',
-                  style: AppTypography.bodySmall.copyWith(
-                    color: const Color(0xFF606060),
-                  ),
-                ),
-                Text(
-                  '\$5.000 available',
-                  style: AppTypography.bodySmall.copyWith(
-                    color: const Color(0xFF606060),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 6),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Container(
-                height: 7,
-                color: const Color(0xFFEDEDED),
-                child: FractionallySizedBox(
-                  alignment: Alignment.centerLeft,
-                  widthFactor: 0.6,
-                  child: Container(
-                    color: AppColors.accent,
-                  ),
+              bottom: PreferredSize(
+                preferredSize: const Size.fromHeight(0.5),
+                child: Container(
+                  height: 0.5,
+                  color: const Color(0xFFEDEDED),
                 ),
               ),
             ),
-            const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Repay before 1 Jul 2025',
+            // Content sections with responsive padding
+            SliverPadding(
+              padding: EdgeInsets.fromLTRB(
+                isTablet ? SpacingTokens.spacing32 : SpacingTokens.spacing20,
+                SpacingTokens.spacing16,
+                isTablet ? SpacingTokens.spacing32 : SpacingTokens.spacing20,
+                0,
+              ),
+              sliver: SliverList(
+                delegate: SliverChildListDelegate([
+                  _buildPersonalInfoSection(strings),
+                  SpacingTokens.gapV12,
+                  _buildLinkedBanksSection(strings),
+                  SpacingTokens.gapV12,
+                  _buildAppSettingsSection(strings, currentLanguage),
+                  SpacingTokens.gapV12,
+                  _buildHelpLegalSection(strings),
+                  SpacingTokens.gapV24,
+                  _buildLogoutRow(strings),
+                  SpacingTokens.gapV16,
+                  Center(
+                    child: Text(
+                      'v$_appVersion',
                       style: AppTypography.bodySmall.copyWith(
-                        color: const Color(0xFF606060),
+                        color: AppColors.textTertiary,
                       ),
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      '\$678.33',
-                      style: AppTypography.bodyLarge.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF101010),
-                      ),
-                    ),
-                  ],
-                ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF101010),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 6,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    elevation: 0,
                   ),
-                  onPressed: () {},
-                  child: const Text(
-                    'Repay',
-                    style: TextStyle(fontSize: 12),
-                  ),
-                ),
-              ],
+                  SizedBox(height: bottomPadding + 32),
+                ]),
+              ),
             ),
           ],
         ),
@@ -233,35 +116,47 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Widget _buildPersonalInfoSection(AppStrings strings) {
     return SettingsSection(
       title: strings.personalInformation,
-      borderRadius: _sectionRadius,
-      titleFontSize: _sectionHeaderFontSize,
-      horizontalPadding: _horizontalInset,
       child: Column(
         children: [
-          SettingsMenuItem.withValue(
-            label: strings.fullName,
-            value: 'Ali Muhajirin',
-            fontSize: _rowFontSize,
-            height: _rowHeight,
-            horizontalPadding: 12,
-          ),
-          const SettingsMenuDivider(leftInset: 16, rightInset: 16),
-          SettingsMenuItem.withValue(
-            label: strings.email,
-            value: 'helloali@gmail.com',
-            fontSize: _rowFontSize,
-            height: _rowHeight,
-            horizontalPadding: 12,
-          ),
-          const SettingsMenuDivider(leftInset: 16, rightInset: 16),
-          SettingsMenuItem.withValue(
-            label: strings.phone,
-            value: '+1 (555) 123-4567',
-            fontSize: _rowFontSize,
-            height: _rowHeight,
-            horizontalPadding: 12,
-          ),
+          _buildStaticRow(strings.fullName, 'Ali Muhajirin'),
+          const SettingsMenuDivider(),
+          _buildStaticRow(strings.email, 'helloali@gmail.com'),
+          const SettingsMenuDivider(),
+          _buildStaticRow(strings.phone, '+1 (555) 123-4567'),
         ],
+      ),
+    );
+  }
+
+  Widget _buildStaticRow(String label, String value) {
+    return SizedBox(
+      height: 52.0,
+      child: Padding(
+        padding: SpacingTokens.paddingHorizontal12,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 14.0,
+                color: Color(0xFF101010),
+                fontFamily: 'Roboto',
+              ),
+            ),
+            Flexible(
+              child: Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 14.0,
+                  color: Color(0xFF606060),
+                  fontFamily: 'Roboto',
+                ),
+                textAlign: TextAlign.right,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -269,55 +164,49 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Widget _buildLinkedBanksSection(AppStrings strings) {
     return SettingsSection(
       title: strings.linkedBankAccounts,
-      borderRadius: _sectionRadius,
-      titleFontSize: _sectionHeaderFontSize,
-      horizontalPadding: _horizontalInset,
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          children: [
-            SettingsPaymentCard(
-              name: 'Emirates NBD Bank',
-              last4: '4567',
-              isPrimary: true,
-              statusLabel: strings.complete,
-              borderRadius: 12,
-            ),
-            const SizedBox(height: 10),
-            SettingsPaymentCard(
-              name: 'Citi Bank',
-              last4: '4567',
-              isPrimary: false,
-              borderRadius: 12,
-            ),
-            const SizedBox(height: 10),
-            OutlinedButton.icon(
-              onPressed: () => context.push(AppRoutes.addBankAccount),
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 6,
-                ),
-                side: const BorderSide(color: Color(0xFFEDEDED)),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
+      padding: SpacingTokens.padding12,
+      child: Column(
+        children: [
+          BankCard(
+            name: 'Emirates NBD Bank',
+            last4: '4567',
+            isPrimary: true,
+            statusLabel: strings.complete,
+          ),
+          SpacingTokens.gapV10,
+          BankCard(
+            name: 'Citi Bank',
+            last4: '4567',
+            isPrimary: false,
+            statusLabel: strings.complete,
+          ),
+          SpacingTokens.gapV10,
+          OutlinedButton.icon(
+            onPressed: () => context.push(AppRoutes.addBankAccount),
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(
+                horizontal: SpacingTokens.spacing16,
+                vertical: SpacingTokens.spacing6,
               ),
-              icon: const Icon(
-                PhosphorIconsRegular.plus,
-                size: 16,
+              side: const BorderSide(color: Color(0xFFEDEDED)),
+              shape: RoundedRectangleBorder(
+                borderRadius: SpacingTokens.borderRadiusMedium,
+              ),
+            ),
+            icon: const Icon(
+              PhosphorIconsRegular.plus,
+              size: SpacingTokens.iconSizeSmall,
+              color: Color(0xFF101010),
+            ),
+            label: Text(
+              strings.addBankAccount,
+              style: const TextStyle(
+                fontSize: 12,
                 color: Color(0xFF101010),
               ),
-              label: Text(
-                strings.addBankAccount,
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: Color(0xFF101010),
-                ),
-              ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -328,65 +217,56 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   ) {
     return SettingsSection(
       title: strings.appSettings,
-      borderRadius: _sectionRadius,
-      titleFontSize: _sectionHeaderFontSize,
-      horizontalPadding: _horizontalInset,
       child: Column(
         children: [
-          SettingsMenuItem.withChevron(
+          SettingsMenuItem(
             icon: PhosphorIconsRegular.bell,
-            iconSize: _iconSize,
             label: strings.notifications,
-            fontSize: _rowFontSize,
-            height: _rowHeight,
-            horizontalPadding: _horizontalInset,
-            iconTextGap: _iconTextGap,
+            trailing: const Icon(
+              PhosphorIconsRegular.caretRight,
+              size: SpacingTokens.iconSizeSmall,
+              color: Color(0xFF878787),
+            ),
             onTap: () => context.push(AppRoutes.notifications),
           ),
           const SettingsMenuDivider(),
-          SettingsMenuItem.withChevron(
+          SettingsMenuItem(
             icon: PhosphorIconsRegular.lock,
-            iconSize: _iconSize,
             label: strings.security,
-            fontSize: _rowFontSize,
-            height: _rowHeight,
-            horizontalPadding: _horizontalInset,
-            iconTextGap: _iconTextGap,
+            trailing: const Icon(
+              PhosphorIconsRegular.caretRight,
+              size: SpacingTokens.iconSizeSmall,
+              color: Color(0xFF878787),
+            ),
             onTap: () => context.push(AppRoutes.security),
           ),
           const SettingsMenuDivider(),
           SettingsMenuItem(
             icon: PhosphorIconsRegular.globe,
-            iconSize: _iconSize,
             label: strings.languageLabel,
-            fontSize: _rowFontSize,
-            height: _rowHeight,
-            horizontalPadding: _horizontalInset,
-            iconTextGap: _iconTextGap,
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   currentLanguage.nativeName,
                   style: const TextStyle(
-                    fontSize: _rowFontSize,
+                    fontSize: 14.0,
                     color: Color(0xFF606060),
                     fontFamily: 'Roboto',
                   ),
                 ),
-                const SizedBox(width: 4),
+                SpacingTokens.gapH4,
                 const Icon(
                   PhosphorIconsRegular.caretRight,
-                  size: 16,
+                  size: SpacingTokens.iconSizeSmall,
                   color: Color(0xFF878787),
                 ),
               ],
             ),
             onTap: () => LanguageSelectorModal.show(
-              context: context,
-              ref: ref,
-              strings: strings,
-              currentLanguage: currentLanguage,
+              context,
+              ref,
+              currentLanguage,
             ),
           ),
         ],
@@ -397,41 +277,38 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Widget _buildHelpLegalSection(AppStrings strings) {
     return SettingsSection(
       title: strings.helpAndLegal,
-      borderRadius: _sectionRadius,
-      titleFontSize: _sectionHeaderFontSize,
-      horizontalPadding: _horizontalInset,
       child: Column(
         children: [
-          SettingsMenuItem.withChevron(
+          SettingsMenuItem(
             icon: PhosphorIconsRegular.question,
-            iconSize: _iconSize,
             label: strings.faq,
-            fontSize: _rowFontSize,
-            height: _rowHeight,
-            horizontalPadding: _horizontalInset,
-            iconTextGap: _iconTextGap,
+            trailing: const Icon(
+              PhosphorIconsRegular.caretRight,
+              size: SpacingTokens.iconSizeSmall,
+              color: Color(0xFF878787),
+            ),
             onTap: () => context.push(AppRoutes.faq),
           ),
           const SettingsMenuDivider(),
-          SettingsMenuItem.withChevron(
+          SettingsMenuItem(
             icon: PhosphorIconsRegular.note,
-            iconSize: _iconSize,
             label: strings.termsAndConditions,
-            fontSize: _rowFontSize,
-            height: _rowHeight,
-            horizontalPadding: _horizontalInset,
-            iconTextGap: _iconTextGap,
+            trailing: const Icon(
+              PhosphorIconsRegular.caretRight,
+              size: SpacingTokens.iconSizeSmall,
+              color: Color(0xFF878787),
+            ),
             onTap: () => context.push(AppRoutes.termsConditions),
           ),
           const SettingsMenuDivider(),
-          SettingsMenuItem.withChevron(
+          SettingsMenuItem(
             icon: PhosphorIconsRegular.shieldCheckered,
-            iconSize: _iconSize,
             label: strings.privacyPolicy,
-            fontSize: _rowFontSize,
-            height: _rowHeight,
-            horizontalPadding: _horizontalInset,
-            iconTextGap: _iconTextGap,
+            trailing: const Icon(
+              PhosphorIconsRegular.caretRight,
+              size: SpacingTokens.iconSizeSmall,
+              color: Color(0xFF878787),
+            ),
             onTap: () => context.push(AppRoutes.privacyPolicy),
           ),
         ],
@@ -441,24 +318,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   Widget _buildLogoutRow(AppStrings strings) {
     return SettingsSection(
-      borderRadius: _sectionRadius,
       child: SettingsMenuItem(
         icon: PhosphorIconsRegular.signOut,
         iconSize: _iconSize,
         label: strings.logout,
-        fontSize: _rowFontSize,
-        height: _rowHeight,
-        horizontalPadding: _horizontalInset,
-        iconTextGap: _iconTextGap,
         onTap: () => context.go(AppRoutes.login),
       ),
     );
-  }
-
-  Future<void> _openTelegram() async {
-    final url = Uri.parse('https://t.me/lexuz_ai');
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url, mode: LaunchMode.externalApplication);
-    }
   }
 }

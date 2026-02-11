@@ -136,4 +136,6 @@ import '../widgets/settings_widgets.dart';
 - Add unit tests for individual widgets
 - Add widget documentation tests
 - Consider creating more specialized widgets as patterns emerge
+- Extract hardcoded font families ('Roboto', 'Onest') to theme constants for consistency
 - Add theming support for easier customization
+- Consider extracting hardcoded colors to theme constants

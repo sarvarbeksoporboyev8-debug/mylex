@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../../../../core/theme/theme.dart';
+import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/routing/app_routes.dart';
 import '../../../../core/localization/app_strings.dart';
 
@@ -69,55 +70,51 @@ class _AddBankAccountScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: AppColors.backgroundSecondary,
       body: SafeArea(
         child: Column(
           children: [
             // Header
             _buildHeader(),
-            // Content
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+                padding: const EdgeInsets.fromLTRB(AppSpacing.xl, AppSpacing.xl, AppSpacing.xl, AppSpacing.m),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Form section
                     _buildFormSection(),
-                    const SizedBox(height: 12),
-                    // Terms section
+                    AppSpacing.gapVerticalM,
                     _buildTermsSection(),
                   ],
                 ),
               ),
             ),
-            // Add button
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+              padding: const EdgeInsets.fromLTRB(AppSpacing.xl, AppSpacing.m, AppSpacing.xl, AppSpacing.m),
               child: SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: _isFormValid && !_isLoading ? _handleAddBank : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _isFormValid
-                        ? const Color(0xFF101010)
-                        : const Color(0xFFEDEDED),
+                        ? AppColors.textPrimary
+                        : AppColors.border,
                     foregroundColor: _isFormValid
-                        ? Colors.white
-                        : const Color(0xFFC2C2C2),
+                        ? AppColors.cardBackground
+                        : AppColors.textTertiary,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: AppSpacing.borderRadiusS,
                     ),
                     elevation: 0,
                   ),
                   child: _isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
+                      ? SizedBox(
+                          height: AppSpacing.xl,
+                          width: AppSpacing.xl,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation(Colors.white),
+                            valueColor: AlwaysStoppedAnimation(AppColors.cardBackground),
                           ),
                         )
                       : Text(
@@ -128,8 +125,8 @@ class _AddBankAccountScreenState
                             fontSize: 16,
                             height: 1.5,
                             color: _isFormValid
-                                ? Colors.white
-                                : const Color(0xFFC2C2C2),
+                                ? AppColors.cardBackground
+                                : AppColors.textTertiary,
                           ),
                         ),
                 ),
@@ -145,7 +142,7 @@ class _AddBankAccountScreenState
     return SizedBox(
       height: 60,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
+        padding: AppSpacing.screenPaddingHorizontal,
         child: Stack(
           alignment: Alignment.center,
           children: [
@@ -157,14 +154,14 @@ class _AddBankAccountScreenState
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    border: Border.all(color: const Color(0xFFEDEDED)),
-                    borderRadius: BorderRadius.circular(10),
-                    color: Colors.white,
+                    border: Border.all(color: AppColors.border),
+                    borderRadius: AppSpacing.borderRadiusS,
+                    color: AppColors.cardBackground,
                   ),
-                  child: const Icon(
+                  child: Icon(
                     PhosphorIconsRegular.caretLeft,
-                    size: 20,
-                    color: Color(0xFF101010),
+                    size: AppSpacing.xl,
+                    color: AppColors.textPrimary,
                   ),
                 ),
               ),
@@ -176,7 +173,7 @@ class _AddBankAccountScreenState
                 fontWeight: FontWeight.w500,
                 fontSize: 18,
                 height: 1.5,
-                color: Color(0xFF101010),
+                color: AppColors.textPrimary,
               ),
             ),
           ],
@@ -188,34 +185,30 @@ class _AddBankAccountScreenState
   Widget _buildFormSection() {
     final strings = ref.watch(stringsProvider);
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: AppSpacing.paddingM,
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFEDEDED)),
+        color: AppColors.cardBackground,
+        borderRadius: AppSpacing.borderRadiusS,
+        border: Border.all(color: AppColors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Bank Name dropdown
           _buildBankNameField(),
-          const SizedBox(height: 12),
-          // Account Name
+          AppSpacing.gapVerticalM,
           _buildInputField(
             label: strings.accountName,
             controller: _accountNameController,
             isRequired: true,
           ),
-          const SizedBox(height: 12),
-          // Account Number
+          AppSpacing.gapVerticalM,
           _buildInputField(
             label: strings.accountNumber,
             controller: _accountNumberController,
             keyboardType: TextInputType.number,
             isRequired: true,
           ),
-          const SizedBox(height: 12),
-          // Set as primary checkbox
+          AppSpacing.gapVerticalM,
           _buildPrimaryCheckbox(),
         ],
       ),
@@ -232,26 +225,26 @@ class _AddBankAccountScreenState
             Text(
               strings.bankName,
               style: AppTypography.labelMedium.copyWith(
-                color: const Color(0xFF101010),
+                color: AppColors.textPrimary,
               ),
             ),
-            const Text(
+            Text(
               ' *',
-              style: TextStyle(color: Color(0xFFE63946)),
+              style: TextStyle(color: AppColors.error),
             ),
           ],
         ),
-        const SizedBox(height: 8),
+        AppSpacing.gapVerticalS,
         GestureDetector(
           onTap: () {
             setState(() => _isDropdownOpen = !_isDropdownOpen);
           },
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: AppSpacing.m),
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: const Color(0xFFEDEDED)),
+              color: AppColors.cardBackground,
+              borderRadius: AppSpacing.borderRadiusS,
+              border: Border.all(color: AppColors.border),
             ),
             child: _selectedBank == null
                 ? Row(
@@ -260,7 +253,7 @@ class _AddBankAccountScreenState
                         child: Text(
                           'Placeholder',
                           style: AppTypography.bodyMedium.copyWith(
-                            color: const Color(0xFF878787),
+                            color: AppColors.textTertiary,
                           ),
                         ),
                       ),
@@ -268,8 +261,8 @@ class _AddBankAccountScreenState
                         _isDropdownOpen
                             ? PhosphorIconsRegular.caretUp
                             : PhosphorIconsRegular.caretDown,
-                        size: 20,
-                        color: const Color(0xFF878787),
+                        size: AppSpacing.xl,
+                        color: AppColors.textTertiary,
                       ),
                     ],
                   )
@@ -292,29 +285,29 @@ class _AddBankAccountScreenState
           width: 43,
           height: 43,
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: const Color(0xFFF5F5F5)),
+            color: AppColors.cardBackground,
+            borderRadius: AppSpacing.borderRadiusS,
+            border: Border.all(color: AppColors.backgroundSecondary),
           ),
           child: Icon(
             bank.icon,
-            size: 20,
+            size: AppSpacing.xl,
             color: AppColors.accent,
           ),
         ),
-        const SizedBox(width: 10),
+        AppSpacing.gapHorizontalM,
         Expanded(
           child: Text(
             bankName,
             style: AppTypography.bodyMedium.copyWith(
-              color: const Color(0xFF101010),
+              color: AppColors.textPrimary,
             ),
           ),
         ),
-        const Icon(
+        Icon(
           PhosphorIconsRegular.checkCircle,
           size: 32,
-          color: Color(0xFF21D07A),
+          color: AppColors.success,
         ),
       ],
     );
@@ -323,13 +316,13 @@ class _AddBankAccountScreenState
   Widget _buildBankDropdown() {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFEDEDED)),
+        color: AppColors.cardBackground,
+        borderRadius: AppSpacing.borderRadiusS,
+        border: Border.all(color: AppColors.border),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
+            blurRadius: AppSpacing.sm,
             offset: const Offset(0, 4),
           ),
         ],
@@ -351,8 +344,8 @@ class _AddBankAccountScreenState
                 vertical: 6,
               ),
               decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10),
+                color: AppColors.cardBackground,
+                borderRadius: AppSpacing.borderRadiusS,
               ),
               child: Row(
                 children: [
@@ -360,45 +353,45 @@ class _AddBankAccountScreenState
                     width: 43,
                     height: 43,
                     decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: const Color(0xFFF5F5F5)),
+                      color: AppColors.cardBackground,
+                      borderRadius: AppSpacing.borderRadiusS,
+                      border: Border.all(color: AppColors.backgroundSecondary),
                     ),
                     child: Icon(
                       bank.icon,
-                      size: 20,
+                      size: AppSpacing.xl,
                       color: AppColors.accent,
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  AppSpacing.gapHorizontalM,
                   Expanded(
                     child: Text(
                       bank.name,
                       style: AppTypography.bodyMedium.copyWith(
-                        color: const Color(0xFF101010),
+                        color: AppColors.textPrimary,
                       ),
                     ),
                   ),
                   Container(
-                    width: 20,
-                    height: 20,
+                    width: AppSpacing.xl,
+                    height: AppSpacing.xl,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
                         color: isSelected
-                            ? const Color(0xFF21D07A)
-                            : const Color(0xFFEDEDED),
+                            ? AppColors.success
+                            : AppColors.border,
                         width: isSelected ? 1.667 : 1,
                       ),
                       color: isSelected
-                          ? const Color(0xFF21D07A)
-                          : Colors.white,
+                          ? AppColors.success
+                          : AppColors.cardBackground,
                     ),
                     child: isSelected
-                        ? const Icon(
+                        ? Icon(
                             Icons.check,
-                            size: 12,
-                            color: Colors.white,
+                            size: AppSpacing.m,
+                            color: AppColors.cardBackground,
                           )
                         : null,
                   ),
@@ -425,46 +418,46 @@ class _AddBankAccountScreenState
             Text(
               label,
               style: AppTypography.labelMedium.copyWith(
-                color: const Color(0xFF101010),
+                color: AppColors.textPrimary,
               ),
             ),
             if (isRequired)
-              const Text(
+              Text(
                 ' *',
-                style: TextStyle(color: Color(0xFFE63946)),
+                style: TextStyle(color: AppColors.error),
               ),
           ],
         ),
-        const SizedBox(height: 8),
+        AppSpacing.gapVerticalS,
         TextField(
           controller: controller,
           keyboardType: keyboardType,
           onChanged: (_) => setState(() {}),
           style: AppTypography.bodyMedium.copyWith(
-            color: const Color(0xFF101010),
+            color: AppColors.textPrimary,
           ),
           decoration: InputDecoration(
             hintText: 'Placeholder',
             hintStyle: AppTypography.bodyMedium.copyWith(
-              color: const Color(0xFF878787),
+              color: AppColors.textTertiary,
             ),
             filled: true,
-            fillColor: Colors.white,
+            fillColor: AppColors.cardBackground,
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFFEDEDED)),
+              borderRadius: AppSpacing.borderRadiusS,
+              borderSide: BorderSide(color: AppColors.border),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFFEDEDED)),
+              borderRadius: AppSpacing.borderRadiusS,
+              borderSide: BorderSide(color: AppColors.border),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: AppSpacing.borderRadiusS,
               borderSide: BorderSide(color: AppColors.accent, width: 1.5),
             ),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 14,
-              vertical: 12,
+              vertical: AppSpacing.m,
             ),
           ),
         ),
@@ -478,33 +471,33 @@ class _AddBankAccountScreenState
         GestureDetector(
           onTap: () => setState(() => _setAsPrimary = !_setAsPrimary),
           child: Container(
-            width: 20,
-            height: 20,
+            width: AppSpacing.xl,
+            height: AppSpacing.xl,
             decoration: BoxDecoration(
               color: _setAsPrimary
-                  ? const Color(0xFF101010)
-                  : Colors.white,
+                  ? AppColors.textPrimary
+                  : AppColors.cardBackground,
               borderRadius: BorderRadius.circular(4),
               border: Border.all(
                 color: _setAsPrimary
-                    ? const Color(0xFF383838)
-                    : const Color(0xFFD6D6D6),
+                    ? AppColors.textSecondary
+                    : AppColors.divider,
               ),
             ),
             child: _setAsPrimary
-                ? const Icon(
+                ? Icon(
                     Icons.check,
-                    size: 12,
-                    color: Colors.white,
+                    size: AppSpacing.m,
+                    color: AppColors.cardBackground,
                   )
                 : null,
           ),
         ),
-        const SizedBox(width: 12),
+        AppSpacing.gapHorizontalM,
         Text(
           ref.watch(stringsProvider).setAsPrimaryAccount,
           style: AppTypography.bodyMedium.copyWith(
-            color: const Color(0xFF101010),
+            color: AppColors.textPrimary,
           ),
         ),
       ],
@@ -514,10 +507,10 @@ class _AddBankAccountScreenState
   Widget _buildTermsSection() {
     final strings = ref.watch(stringsProvider);
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: AppSpacing.paddingM,
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        color: AppColors.cardBackground,
+        borderRadius: AppSpacing.borderRadiusS,
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -525,34 +518,34 @@ class _AddBankAccountScreenState
           GestureDetector(
             onTap: () => setState(() => _agreeToTerms = !_agreeToTerms),
             child: Container(
-              width: 20,
-              height: 20,
+              width: AppSpacing.xl,
+              height: AppSpacing.xl,
               decoration: BoxDecoration(
                 color: _agreeToTerms
-                    ? const Color(0xFF101010)
-                    : Colors.white,
+                    ? AppColors.textPrimary
+                    : AppColors.cardBackground,
                 borderRadius: BorderRadius.circular(4),
                 border: Border.all(
                   color: _agreeToTerms
-                      ? const Color(0xFF383838)
-                      : const Color(0xFFD6D6D6),
+                      ? AppColors.textSecondary
+                      : AppColors.divider,
                 ),
               ),
               child: _agreeToTerms
-                  ? const Icon(
+                  ? Icon(
                       Icons.check,
-                      size: 12,
-                      color: Colors.white,
+                      size: AppSpacing.m,
+                      color: AppColors.cardBackground,
                     )
                   : null,
             ),
           ),
-          const SizedBox(width: 10),
+          AppSpacing.gapHorizontalM,
           Expanded(
             child: Text(
               strings.byAddingBankAccountAgree,
               style: AppTypography.bodySmall.copyWith(
-                color: const Color(0xFF606060),
+                color: AppColors.textSecondary,
               ),
             ),
           ),

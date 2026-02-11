@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../../../../core/theme/theme.dart';
+import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/routing/app_routes.dart';
 import '../../../../core/localization/app_strings.dart';
 
@@ -42,61 +43,57 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: AppColors.backgroundSecondary,
       body: SafeArea(
         child: Column(
           children: [
             // Header
             _buildHeader(),
-            // Content
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+                padding: const EdgeInsets.fromLTRB(AppSpacing.xl, AppSpacing.m, AppSpacing.xl, AppSpacing.m),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Profile picture section
                     _buildProfilePictureSection(),
-                    const SizedBox(height: 8),
-                    // Form section
+                    AppSpacing.gapVerticalS,
                     _buildFormSection(),
                   ],
                 ),
               ),
             ),
-            // Save button
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+              padding: const EdgeInsets.fromLTRB(AppSpacing.xl, AppSpacing.m, AppSpacing.xl, AppSpacing.m),
               child: SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _handleSave,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF101010),
-                    foregroundColor: Colors.white,
+                    backgroundColor: AppColors.textPrimary,
+                    foregroundColor: AppColors.cardBackground,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: AppSpacing.borderRadiusS,
                     ),
                     elevation: 0,
                   ),
                   child: _isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
+                      ? SizedBox(
+                          height: AppSpacing.xl,
+                          width: AppSpacing.xl,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation(Colors.white),
+                            valueColor: AlwaysStoppedAnimation(AppColors.cardBackground),
                           ),
                         )
                       : Text(
                           ref.watch(stringsProvider).saveChanges,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontFamily: 'Onest',
                             fontWeight: FontWeight.w500,
                             fontSize: 16,
                             height: 1.5,
-                            color: Colors.white,
+                            color: AppColors.cardBackground,
                           ),
                         ),
                 ),
@@ -112,7 +109,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     return SizedBox(
       height: 60,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
+        padding: AppSpacing.screenPaddingHorizontal,
         child: Stack(
           alignment: Alignment.center,
           children: [
@@ -124,14 +121,14 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    border: Border.all(color: const Color(0xFFEDEDED)),
-                    borderRadius: BorderRadius.circular(10),
-                    color: Colors.white,
+                    border: Border.all(color: AppColors.border),
+                    borderRadius: AppSpacing.borderRadiusS,
+                    color: AppColors.cardBackground,
                   ),
-                  child: const Icon(
+                  child: Icon(
                     PhosphorIconsRegular.caretLeft,
-                    size: 20,
-                    color: Color(0xFF101010),
+                    size: AppSpacing.xl,
+                    color: AppColors.textPrimary,
                   ),
                 ),
               ),
@@ -143,7 +140,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 fontWeight: FontWeight.w500,
                 fontSize: 18,
                 height: 1.5,
-                color: Color(0xFF101010),
+                color: AppColors.textPrimary,
               ),
             ),
           ],
@@ -162,9 +159,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             decoration: BoxDecoration(
               color: AppColors.accent.withOpacity(0.08),
               shape: BoxShape.circle,
-              border: Border.all(color: const Color(0xFFEDEDED)),
+              border: Border.all(color: AppColors.border),
             ),
-            child: const Icon(
+            child: Icon(
               PhosphorIconsRegular.user,
               size: 50,
               color: AppColors.accent,
@@ -179,12 +176,12 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               decoration: BoxDecoration(
                 color: AppColors.accent,
                 shape: BoxShape.circle,
-                border: Border.all(color: Colors.white, width: 2),
+                border: Border.all(color: AppColors.cardBackground, width: 2),
               ),
-              child: const Icon(
+              child: Icon(
                 PhosphorIconsRegular.camera,
-                size: 16,
-                color: Colors.white,
+                size: AppSpacing.l,
+                color: AppColors.cardBackground,
               ),
             ),
           ),
@@ -196,32 +193,28 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   Widget _buildFormSection() {
     final strings = ref.watch(stringsProvider);
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: AppSpacing.paddingM,
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFEDEDED)),
+        color: AppColors.cardBackground,
+        borderRadius: AppSpacing.borderRadiusS,
+        border: Border.all(color: AppColors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Full name
           _buildInputField(
             label: strings.fullName,
             controller: _fullNameController,
           ),
-          const SizedBox(height: 12),
-          // Gender
+          AppSpacing.gapVerticalM,
           _buildGenderSelector(),
-          const SizedBox(height: 12),
-          // Email
+          AppSpacing.gapVerticalM,
           _buildInputField(
             label: strings.email,
             controller: _emailController,
             keyboardType: TextInputType.emailAddress,
           ),
-          const SizedBox(height: 12),
-          // Phone
+          AppSpacing.gapVerticalM,
           _buildInputField(
             label: strings.phone,
             controller: _phoneController,
@@ -242,10 +235,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         Text(
           strings.gender,
           style: AppTypography.labelMedium.copyWith(
-            color: const Color(0xFF101010),
+            color: AppColors.textPrimary,
           ),
         ),
-        const SizedBox(height: 8),
+        AppSpacing.gapVerticalS,
         Row(
           children: [
             Expanded(
@@ -269,12 +262,12 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm, horizontal: AppSpacing.xl),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF101010) : Colors.white,
-          borderRadius: BorderRadius.circular(8),
+          color: isSelected ? AppColors.textPrimary : AppColors.cardBackground,
+          borderRadius: AppSpacing.borderRadiusS,
           border: Border.all(
-            color: const Color(0xFFEDEDED),
+            color: AppColors.border,
           ),
         ),
         child: Center(
@@ -283,7 +276,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: isSelected ? Colors.white : const Color(0xFF101010),
+              color: isSelected ? AppColors.cardBackground : AppColors.textPrimary,
             ),
           ),
         ),
@@ -306,48 +299,48 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             Text(
               label,
               style: AppTypography.labelMedium.copyWith(
-                color: const Color(0xFF101010),
+                color: AppColors.textPrimary,
               ),
             ),
             if (isRequired)
-              const Text(
+              Text(
                 ' *',
                 style: TextStyle(
-                  color: Color(0xFFE63946),
+                  color: AppColors.error,
                 ),
               ),
           ],
         ),
-        const SizedBox(height: 8),
+        AppSpacing.gapVerticalS,
         TextField(
           controller: controller,
           keyboardType: keyboardType,
           maxLines: maxLines,
           style: AppTypography.bodyMedium.copyWith(
-            color: const Color(0xFF101010),
+            color: AppColors.textPrimary,
           ),
           decoration: InputDecoration(
             hintText: 'Placeholder',
             hintStyle: AppTypography.bodyMedium.copyWith(
-              color: const Color(0xFF878787),
+              color: AppColors.textTertiary,
             ),
             filled: true,
-            fillColor: Colors.white,
+            fillColor: AppColors.cardBackground,
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFFEDEDED)),
+              borderRadius: AppSpacing.borderRadiusS,
+              borderSide: BorderSide(color: AppColors.border),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFFEDEDED)),
+              borderRadius: AppSpacing.borderRadiusS,
+              borderSide: BorderSide(color: AppColors.border),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: AppSpacing.borderRadiusS,
               borderSide: BorderSide(color: AppColors.accent, width: 1.5),
             ),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 14,
-              vertical: 12,
+              vertical: AppSpacing.m,
             ),
           ),
         ),

@@ -5,6 +5,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/localization/app_strings.dart';
 import '../../data/faq_provider.dart';
 
@@ -78,16 +79,14 @@ class _FaqScreenState extends ConsumerState<FaqScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.cardBackground,
       body: SafeArea(
         child: Column(
           children: [
-            // Header - h-[60px], pb-[12px] pt-[8px] px-[20px]
             _buildHeader(context),
-            // Content - white background, p-[20px]
             Expanded(
               child: Container(
-                color: Colors.white,
+                color: AppColors.cardBackground,
                 child: ref.watch(faqContentProvider).when(
                   data: (content) {
                     if (content == null || content.isEmpty) {
@@ -95,14 +94,14 @@ class _FaqScreenState extends ConsumerState<FaqScreen> {
                     }
                     final faqs = _parseFaqContent(content);
                     return SingleChildScrollView(
-                      padding: const EdgeInsets.all(20),
+                      padding: AppSpacing.paddingXl,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           ...List.generate(
                             faqs.length,
                             (index) => Padding(
-                              padding: const EdgeInsets.only(bottom: 8),
+                              padding: const EdgeInsets.only(bottom: AppSpacing.s),
                               child: _buildFaqItem(index, faqs[index]),
                             ),
                           ),
@@ -126,7 +125,7 @@ class _FaqScreenState extends ConsumerState<FaqScreen> {
     return SizedBox(
       height: 60,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
+        padding: AppSpacing.screenPaddingHorizontal,
         child: Stack(
           alignment: Alignment.center,
           children: [
@@ -138,14 +137,14 @@ class _FaqScreenState extends ConsumerState<FaqScreen> {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    border: Border.all(color: const Color(0xFFEDEDED)),
-                    borderRadius: BorderRadius.circular(10),
-                    color: Colors.white,
+                    border: Border.all(color: AppColors.border),
+                    borderRadius: AppSpacing.borderRadiusS,
+                    color: AppColors.cardBackground,
                   ),
-                  child: const Icon(
+                  child: Icon(
                     PhosphorIconsRegular.caretLeft,
-                    size: 20,
-                    color: Color(0xFF101010),
+                    size: AppSpacing.xl,
+                    color: AppColors.textPrimary,
                   ),
                 ),
               ),
@@ -157,7 +156,7 @@ class _FaqScreenState extends ConsumerState<FaqScreen> {
                 fontWeight: FontWeight.w500,
                 fontSize: 18,
                 height: 1.5,
-                color: Color(0xFF101010),
+                color: AppColors.textPrimary,
               ),
             ),
           ],
@@ -167,20 +166,20 @@ class _FaqScreenState extends ConsumerState<FaqScreen> {
   }
 
   Widget _buildLoadingState() {
-    return const Center(
+    return Center(
       child: Padding(
-        padding: EdgeInsets.all(40),
+        padding: const EdgeInsets.all(AppSpacing.xxl + AppSpacing.l),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(),
-            SizedBox(height: 16),
+            const CircularProgressIndicator(),
+            AppSpacing.gapVerticalL,
             Text(
               'Loading FAQ...',
-              style: TextStyle(
+              style: const TextStyle(
                 fontFamily: 'Onest',
                 fontSize: 14,
-                color: Color(0xFF606060),
+                color: AppColors.textSecondary,
               ),
             ),
           ],
@@ -192,13 +191,12 @@ class _FaqScreenState extends ConsumerState<FaqScreen> {
   Widget _buildFaqItem(int index, Map<String, String> faq) {
     final isExpanded = _expandedIndex == index;
 
-    // bg-white, gap-[12px], p-[12px], gap-[8px] between question and answer
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: AppSpacing.paddingM,
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFEDEDED)),
+        color: AppColors.cardBackground,
+        borderRadius: AppSpacing.borderRadiusS,
+        border: Border.all(color: AppColors.border),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -208,7 +206,6 @@ class _FaqScreenState extends ConsumerState<FaqScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Question - font-['Onest:Medium'], text-[16px], leading-[1.5]
                 Text(
                   faq['question']!,
                   style: const TextStyle(
@@ -216,12 +213,11 @@ class _FaqScreenState extends ConsumerState<FaqScreen> {
                     fontWeight: FontWeight.w500,
                     fontSize: 16,
                     height: 1.5,
-                    color: Color(0xFF101010),
+                    color: AppColors.textPrimary,
                   ),
                 ),
                 if (isExpanded && faq['answer']!.isNotEmpty) ...[
-                  const SizedBox(height: 8),
-                  // Answer - font-['Onest:Regular'], text-[16px], leading-[1.5]
+                  AppSpacing.gapVerticalS,
                   Text(
                     faq['answer']!,
                     style: const TextStyle(
@@ -229,15 +225,14 @@ class _FaqScreenState extends ConsumerState<FaqScreen> {
                       fontWeight: FontWeight.w400,
                       fontSize: 16,
                       height: 1.5,
-                      color: Color(0xFF606060),
+                      color: AppColors.textSecondary,
                     ),
                   ),
                 ],
               ],
             ),
           ),
-          const SizedBox(width: 12),
-          // Icon button - bg-[#f2eef9], border border-[#f2e6ff], p-[8px]
+          AppSpacing.gapHorizontalM,
           GestureDetector(
             onTap: () {
               setState(() {
@@ -245,17 +240,17 @@ class _FaqScreenState extends ConsumerState<FaqScreen> {
               });
             },
             child: Container(
-              padding: const EdgeInsets.all(8),
+              padding: AppSpacing.paddingS,
               decoration: BoxDecoration(
                 color: AppColors.accent.withOpacity(0.08),
                 border: Border.all(color: AppColors.accent.withOpacity(0.16)),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: AppSpacing.borderRadiusS,
               ),
               child: Icon(
                 isExpanded
                     ? PhosphorIconsRegular.caretUp
                     : PhosphorIconsRegular.caretDown,
-                size: 20,
+                size: AppSpacing.xl,
                 color: AppColors.accent,
               ),
             ),
@@ -268,36 +263,36 @@ class _FaqScreenState extends ConsumerState<FaqScreen> {
   Widget _buildErrorState(WidgetRef ref) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(40),
+        padding: const EdgeInsets.all(AppSpacing.xxl + AppSpacing.l),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
+            Icon(
               Icons.error_outline,
               size: 48,
-              color: Color(0xFF606060),
+              color: AppColors.textSecondary,
             ),
-            const SizedBox(height: 16),
-            const Text(
+            AppSpacing.gapVerticalL,
+            Text(
               'Failed to load FAQ',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontFamily: 'Onest',
                 fontSize: 14,
-                color: Color(0xFF606060),
+                color: AppColors.textSecondary,
               ),
             ),
-            const SizedBox(height: 24),
+            AppSpacing.gapVerticalXl,
             ElevatedButton(
               onPressed: () {
                 ref.invalidate(faqContentProvider);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.accent,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                foregroundColor: AppColors.textOnAccent,
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl, vertical: AppSpacing.m),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: AppSpacing.borderRadiusS,
                 ),
               ),
               child: const Text(

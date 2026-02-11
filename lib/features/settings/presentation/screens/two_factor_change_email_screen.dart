@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/localization/app_strings.dart';
 
 class TwoFactorChangeEmailScreen extends ConsumerStatefulWidget {
@@ -27,22 +29,21 @@ class _TwoFactorChangeEmailScreenState
     final isFilled = _emailController.text.trim().isNotEmpty;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.cardBackground,
       body: SafeArea(
         child: Column(
           children: [
             // Header
             _buildHeader(context),
-            // Content
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+                padding: const EdgeInsets.fromLTRB(AppSpacing.xl, AppSpacing.m, AppSpacing.xl, AppSpacing.xxl),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 12),
+                    AppSpacing.gapVerticalM,
                     _buildEmailField(),
-                    const SizedBox(height: 24),
+                    AppSpacing.gapVerticalXl,
                     _buildPrimaryButton(
                       label: ref.watch(stringsProvider).changeEmail,
                       enabled: isFilled,
@@ -52,13 +53,12 @@ class _TwoFactorChangeEmailScreenState
                 ),
               ),
             ),
-            // Terms text at bottom
             Padding(
               padding: EdgeInsets.fromLTRB(
-                20,
+                AppSpacing.xl,
                 0,
-                20,
-                16 + MediaQuery.of(context).padding.bottom,
+                AppSpacing.xl,
+                AppSpacing.l + MediaQuery.of(context).padding.bottom,
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -71,7 +71,7 @@ class _TwoFactorChangeEmailScreenState
                       fontWeight: FontWeight.w400,
                       fontSize: 14,
                       height: 1.5,
-                      color: Color(0xFF606060),
+                      color: AppColors.textSecondary,
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -83,7 +83,7 @@ class _TwoFactorChangeEmailScreenState
                       fontWeight: FontWeight.w400,
                       fontSize: 14,
                       height: 1.5,
-                      color: Color(0xFF606060),
+                      color: AppColors.textSecondary,
                       decoration: TextDecoration.underline,
                     ),
                   ),
@@ -100,7 +100,7 @@ class _TwoFactorChangeEmailScreenState
     return SizedBox(
       height: 60,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
+        padding: AppSpacing.screenPaddingHorizontal,
         child: Stack(
           alignment: Alignment.center,
           children: [
@@ -112,14 +112,14 @@ class _TwoFactorChangeEmailScreenState
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    border: Border.all(color: const Color(0xFFEDEDED)),
-                    borderRadius: BorderRadius.circular(10),
-                    color: Colors.white,
+                    border: Border.all(color: AppColors.border),
+                    borderRadius: AppSpacing.borderRadiusS,
+                    color: AppColors.cardBackground,
                   ),
-                  child: const Icon(
+                  child: Icon(
                     PhosphorIconsRegular.caretLeft,
-                    size: 20,
-                    color: Color(0xFF101010),
+                    size: AppSpacing.xl,
+                    color: AppColors.textPrimary,
                   ),
                 ),
               ),
@@ -131,7 +131,7 @@ class _TwoFactorChangeEmailScreenState
                 fontWeight: FontWeight.w500,
                 fontSize: 18,
                 height: 1.5,
-                color: Color(0xFF101010),
+                color: AppColors.textPrimary,
               ),
             ),
           ],
@@ -151,10 +151,10 @@ class _TwoFactorChangeEmailScreenState
             fontWeight: FontWeight.w500,
             fontSize: 14,
             height: 1.5,
-            color: Color(0xFF101010),
+            color: AppColors.textPrimary,
           ),
         ),
-        const SizedBox(height: 8),
+        AppSpacing.gapVerticalS,
         TextField(
           controller: _emailController,
           keyboardType: TextInputType.emailAddress,
@@ -162,26 +162,26 @@ class _TwoFactorChangeEmailScreenState
           decoration: InputDecoration(
             isDense: true,
             contentPadding:
-                const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                const EdgeInsets.symmetric(horizontal: 14, vertical: AppSpacing.m),
             hintText: 'Placeholder',
             hintStyle: const TextStyle(
               fontFamily: 'Onest',
               fontWeight: FontWeight.w400,
               fontSize: 14,
               height: 1.5,
-              color: Color(0xFF878787),
+              color: AppColors.textTertiary,
             ),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFFEDEDED)),
+              borderRadius: AppSpacing.borderRadiusS,
+              borderSide: BorderSide(color: AppColors.border),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFFEDEDED)),
+              borderRadius: AppSpacing.borderRadiusS,
+              borderSide: BorderSide(color: AppColors.border),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFF101010)),
+              borderRadius: AppSpacing.borderRadiusS,
+              borderSide: BorderSide(color: AppColors.textPrimary),
             ),
           ),
         ),
@@ -194,9 +194,8 @@ class _TwoFactorChangeEmailScreenState
     required bool enabled,
     VoidCallback? onPressed,
   }) {
-    final bgColor = enabled ? const Color(0xFF101010) : const Color(0xFFEDEDED);
-    final textColor =
-        enabled ? Colors.white : const Color(0xFFC2C2C2);
+    final bgColor = enabled ? AppColors.textPrimary : AppColors.border;
+    final textColor = enabled ? AppColors.cardBackground : AppColors.textTertiary;
 
     return SizedBox(
       width: double.infinity,
@@ -207,7 +206,7 @@ class _TwoFactorChangeEmailScreenState
           disabledBackgroundColor: bgColor,
           padding: const EdgeInsets.symmetric(vertical: 14),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: AppSpacing.borderRadiusS,
           ),
           elevation: enabled ? 0 : 0,
         ),

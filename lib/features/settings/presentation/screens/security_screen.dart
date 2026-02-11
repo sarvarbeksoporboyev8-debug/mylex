@@ -18,7 +18,6 @@ class SecurityScreen extends ConsumerStatefulWidget {
 class _SecurityScreenState extends ConsumerState<SecurityScreen> {
   @override
   Widget build(BuildContext context) {
-    final settingsState = ref.watch(settingsStateProvider);
     final screenSize = MediaQuery.of(context).size;
     final isTablet = screenSize.width > 600;
 

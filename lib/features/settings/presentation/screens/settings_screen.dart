@@ -38,8 +38,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Widget build(BuildContext context) {
     final strings = ref.watch(stringsProvider);
     final currentLanguage = ref.watch(languageProvider);
-    final creditCardState = ref.watch(creditCardProvider);
-    final settingsState = ref.watch(settingsStateProvider);
 
     // Use MediaQuery for responsive design instead of hardcoded values
     final screenSize = MediaQuery.of(context).size;
@@ -268,7 +266,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             onTap: () => LanguageSelectorModal.show(
               context,
               ref,
-              strings,
               currentLanguage,
             ),
           ),

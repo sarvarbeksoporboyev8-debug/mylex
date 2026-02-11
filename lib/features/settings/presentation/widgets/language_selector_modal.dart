@@ -20,7 +20,6 @@ class LanguageSelectorModal extends ConsumerWidget {
   static Future<void> show(
     BuildContext context,
     WidgetRef ref,
-    AppStrings strings,
     AppLanguage currentLanguage,
   ) {
     return showModalBottomSheet(

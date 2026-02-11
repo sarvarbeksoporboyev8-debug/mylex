@@ -42,6 +42,7 @@ class CreditCardModel {
   /// Calculate credit utilization ratio (0.0 to 1.0)
   double get creditUtilizationRatio {
     if (creditLimit <= 0) return 0.0;
+    // Clamp to handle negative amounts (refunds) and prevent values > 1.0
     return (usedAmount / creditLimit).clamp(0.0, 1.0);
   }
 
@@ -310,5 +311,36 @@ class NotificationItem {
   @override
   int get hashCode {
     return Object.hash(id, title, message, timestamp, type, isRead);
+  }
+}
+
+/// Model for language option in language selector
+@immutable
+class LanguageOption {
+  final String code;
+  final String name;
+  final String? nativeName;
+  final String flag;
+
+  const LanguageOption({
+    required this.code,
+    required this.name,
+    this.nativeName,
+    required this.flag,
+  });
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is LanguageOption &&
+        other.code == code &&
+        other.name == name &&
+        other.nativeName == nativeName &&
+        other.flag == flag;
+  }
+
+  @override
+  int get hashCode {
+    return Object.hash(code, name, nativeName, flag);
   }
 }

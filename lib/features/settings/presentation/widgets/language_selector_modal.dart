@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../core/theme/spacing_tokens.dart';
+import '../../domain/models/settings_models.dart';
 
 /// Language selector modal bottom sheet
 /// 
@@ -140,19 +141,4 @@ class LanguageSelectorModal extends StatelessWidget {
       ),
     );
   }
-}
-
-/// Language option model for the selector
-class LanguageOption {
-  final String code;
-  final String name;
-  final String? nativeName;
-  final String flag;
-
-  const LanguageOption({
-    required this.code,
-    required this.name,
-    this.nativeName,
-    required this.flag,
-  });
 }

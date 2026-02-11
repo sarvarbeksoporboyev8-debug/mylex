@@ -7,10 +7,14 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../../../core/theme/theme.dart';
+import '../../../../core/theme/spacing_tokens.dart';
 import '../../../../core/localization/app_language.dart';
 import '../../../../core/localization/app_strings.dart';
 import '../../../../core/routing/app_routes.dart';
 import '../../../auth/domain/auth_state.dart';
+import '../../domain/providers/settings_providers.dart';
+import '../../domain/models/settings_models.dart';
+import '../widgets/settings_widgets.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -20,7 +24,6 @@ class SettingsScreen extends ConsumerStatefulWidget {
 }
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
-  bool _notificationsEnabled = true;
   String _appVersion = '1.0.0';
 
   // Layout constants tuned for BNPL settings design

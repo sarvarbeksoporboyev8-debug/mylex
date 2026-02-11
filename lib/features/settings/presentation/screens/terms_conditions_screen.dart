@@ -5,6 +5,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/localization/app_strings.dart';
 import '../../data/terms_provider.dart';
 
@@ -14,23 +15,21 @@ class TermsConditionsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.cardBackground,
       body: SafeArea(
         child: Column(
           children: [
-            // Header - h-[60px], pb-[12px] pt-[8px] px-[20px]
             _buildHeader(context, ref),
-            // Content - white background, p-[20px]
             Expanded(
               child: Container(
-                color: Colors.white,
+                color: AppColors.cardBackground,
                 child: ref.watch(termsContentProvider).when(
                   data: (content) {
                     if (content == null || content.isEmpty) {
                       return _buildErrorState(ref);
                     }
                     return SingleChildScrollView(
-                      padding: const EdgeInsets.all(20),
+                      padding: AppSpacing.paddingXl,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -42,41 +41,41 @@ class TermsConditionsScreen extends ConsumerWidget {
                                 fontWeight: FontWeight.w400,
                                 fontSize: 16,
                                 height: 1.5,
-                                color: Color(0xFF606060),
+                                color: AppColors.textSecondary,
                               ),
                               h1: const TextStyle(
                                 fontFamily: 'Onest',
                                 fontWeight: FontWeight.w600,
                                 fontSize: 16,
                                 height: 1.5,
-                                color: Color(0xFF101010),
+                                color: AppColors.textPrimary,
                               ),
                               h2: const TextStyle(
                                 fontFamily: 'Onest',
                                 fontWeight: FontWeight.w600,
                                 fontSize: 16,
                                 height: 1.5,
-                                color: Color(0xFF101010),
+                                color: AppColors.textPrimary,
                               ),
                               h3: const TextStyle(
                                 fontFamily: 'Onest',
                                 fontWeight: FontWeight.w500,
                                 fontSize: 16,
                                 height: 1.5,
-                                color: Color(0xFF101010),
+                                color: AppColors.textPrimary,
                               ),
                               strong: const TextStyle(
                                 fontFamily: 'Onest',
                                 fontWeight: FontWeight.w600,
                                 fontSize: 16,
-                                color: Color(0xFF101010),
+                                color: AppColors.textPrimary,
                               ),
                               listBullet: const TextStyle(
                                 fontFamily: 'Onest',
                                 fontWeight: FontWeight.w400,
                                 fontSize: 16,
                                 height: 1.5,
-                                color: Color(0xFF606060),
+                                color: AppColors.textSecondary,
                               ),
                             ),
                           ),
@@ -101,7 +100,7 @@ class TermsConditionsScreen extends ConsumerWidget {
     return SizedBox(
       height: 60,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
+        padding: AppSpacing.screenPaddingHorizontal,
         child: Stack(
           alignment: Alignment.center,
           children: [
@@ -113,14 +112,14 @@ class TermsConditionsScreen extends ConsumerWidget {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    border: Border.all(color: const Color(0xFFEDEDED)),
-                    borderRadius: BorderRadius.circular(10),
-                    color: Colors.white,
+                    border: Border.all(color: AppColors.border),
+                    borderRadius: AppSpacing.borderRadiusS,
+                    color: AppColors.cardBackground,
                   ),
-                  child: const Icon(
+                  child: Icon(
                     PhosphorIconsRegular.caretLeft,
-                    size: 20,
-                    color: Color(0xFF101010),
+                    size: AppSpacing.xl,
+                    color: AppColors.textPrimary,
                   ),
                 ),
               ),
@@ -132,7 +131,7 @@ class TermsConditionsScreen extends ConsumerWidget {
                 fontWeight: FontWeight.w500,
                 fontSize: 18,
                 height: 1.5,
-                color: Color(0xFF101010),
+                color: AppColors.textPrimary,
               ),
             ),
           ],
@@ -227,20 +226,20 @@ class TermsConditionsScreen extends ConsumerWidget {
   }
 
   Widget _buildLoadingState() {
-    return const Center(
+    return Center(
       child: Padding(
-        padding: EdgeInsets.all(40),
+        padding: const EdgeInsets.all(40),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(),
-            SizedBox(height: 16),
+            const CircularProgressIndicator(),
+            AppSpacing.gapVerticalL,
             Text(
               'Loading terms and conditions...',
               style: TextStyle(
                 fontFamily: 'Onest',
                 fontSize: 14,
-                color: Color(0xFF606060),
+                color: AppColors.textSecondary,
               ),
             ),
           ],
@@ -256,32 +255,32 @@ class TermsConditionsScreen extends ConsumerWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
+            Icon(
               Icons.error_outline,
               size: 48,
-              color: Color(0xFF606060),
+              color: AppColors.textSecondary,
             ),
-            const SizedBox(height: 16),
-            const Text(
+            AppSpacing.gapVerticalL,
+            Text(
               'Failed to load terms and conditions',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontFamily: 'Onest',
                 fontSize: 14,
-                color: Color(0xFF606060),
+                color: AppColors.textSecondary,
               ),
             ),
-            const SizedBox(height: 24),
+            AppSpacing.gapVerticalXl,
             ElevatedButton(
               onPressed: () {
                 ref.invalidate(termsContentProvider);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.accent,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                foregroundColor: AppColors.textOnAccent,
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl, vertical: AppSpacing.m),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: AppSpacing.borderRadiusS,
                 ),
               ),
               child: const Text(

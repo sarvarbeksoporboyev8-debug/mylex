@@ -1,137 +1,195 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import '../models/settings_models.dart';
 
-/// Enum for different settings view modes
-enum SettingsViewMode {
-  defaultView,
-  loading,
-  error,
-}
+part 'settings_providers.g.dart';
 
-/// Settings state class
-class SettingsState {
-  final bool notificationsEnabled;
-  final bool faceIdEnabled;
-  final bool appLockEnabled;
-  final SettingsViewMode viewMode;
-  final String? errorMessage;
-
-  const SettingsState({
-    this.notificationsEnabled = true,
-    this.faceIdEnabled = false,
-    this.appLockEnabled = true,
-    this.viewMode = SettingsViewMode.defaultView,
-    this.errorMessage,
-  });
-
-  SettingsState copyWith({
-    bool? notificationsEnabled,
-    bool? faceIdEnabled,
-    bool? appLockEnabled,
-    SettingsViewMode? viewMode,
-    String? errorMessage,
-  }) {
-    return SettingsState(
-      notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
-      faceIdEnabled: faceIdEnabled ?? this.faceIdEnabled,
-      appLockEnabled: appLockEnabled ?? this.appLockEnabled,
-      viewMode: viewMode ?? this.viewMode,
-      errorMessage: errorMessage ?? this.errorMessage,
-    );
-  }
-}
-
-/// Settings state notifier
+/// Settings state notifier for managing all user settings
 class SettingsNotifier extends StateNotifier<SettingsState> {
-  SettingsNotifier() : super(const SettingsState());
-
-  void toggleNotifications(bool value) {
-    state = state.copyWith(notificationsEnabled: value);
+  SettingsNotifier() : super(const SettingsState()) {
+    _initialize();
   }
 
-  void toggleFaceId(bool value) {
-    state = state.copyWith(faceIdEnabled: value);
+  Future<void> _initialize() async {
+    state = state.asLoading;
+    
+    try {
+      // TODO: Load settings from backend/local storage
+      await Future.delayed(const Duration(milliseconds: 500));
+      
+      // Mock data - TODO: Replace with real API call
+      // Using placeholder values until backend integration is complete
+      final profile = UserProfile(
+        id: '1',
+        name: 'Ali Muhajirin',
+        email: 'helloali@gmail.com',
+        phone: '+1 (555) 123-4567',
+      );
+      
+      final cards = [
+        CreditCardModel(
+          id: '1',
+          name: 'Uzcard',
+          last4Digits: '1234',
+          creditLimit: 5000.0,
+          usedAmount: 512.23,
+          repaymentDate: DateTime(2025, 7, 1),
+          nextPaymentAmount: 678.33,
+          isPrimary: true,
+        ),
+        CreditCardModel(
+          id: '2',
+          name: 'Humo',
+          last4Digits: '5678',
+          creditLimit: 3000.0,
+          usedAmount: 1200.0,
+          repaymentDate: DateTime(2025, 6, 15),
+          nextPaymentAmount: 400.0,
+          isPrimary: false,
+        ),
+      ];
+      
+      state = state.copyWith(
+        viewMode: SettingsViewMode.normal,
+        profile: profile,
+        cards: cards,
+      );
+    } catch (e) {
+      state = state.copyWith(
+        viewMode: SettingsViewMode.error,
+        errorMessage: e.toString(),
+      );
+    }
   }
 
-  void toggleAppLock(bool value) {
-    state = state.copyWith(appLockEnabled: value);
+  /// Update notification settings
+  void updateNotificationSettings(NotificationSettings settings) {
+    state = state.copyWith(notifications: settings);
+    // TODO: Save to backend/local storage
   }
 
-  void setViewMode(SettingsViewMode mode) {
-    state = state.copyWith(viewMode: mode);
+  /// Update security settings
+  void updateSecuritySettings(SecuritySettings settings) {
+    state = state.copyWith(security: settings);
+    // TODO: Save to backend/local storage
   }
 
-  void setError(String message) {
+  /// Toggle notification enabled state
+  void toggleNotifications(bool enabled) {
     state = state.copyWith(
-      viewMode: SettingsViewMode.error,
-      errorMessage: message,
+      notifications: state.notifications.copyWith(pushEnabled: enabled),
     );
+    // TODO: Save to backend/local storage
   }
+
+  /// Toggle Face ID
+  void toggleFaceId(bool enabled) {
+    state = state.copyWith(
+      security: state.security.copyWith(faceIdEnabled: enabled),
+    );
+    // TODO: Save to backend/local storage
+  }
+
+  /// Toggle App Lock
+  void toggleAppLock(bool enabled) {
+    state = state.copyWith(
+      security: state.security.copyWith(appLockEnabled: enabled),
+    );
+    // TODO: Save to backend/local storage
+  }
+
+  /// Update user profile
+  void updateProfile(UserProfile profile) {
+    state = state.copyWith(profile: profile);
+    // TODO: Save to backend
+  }
+
+  /// Add a new card
+  void addCard(CreditCardModel card) {
+    state = state.copyWith(
+      cards: [...state.cards, card],
+    );
+    // TODO: Save to backend
+  }
+
+  /// Remove a card
+  void removeCard(String cardId) {
+    state = state.copyWith(
+      cards: state.cards.where((c) => c.id != cardId).toList(),
+    );
+    // TODO: Save to backend
+  }
+
+  /// Set primary card
+  void setPrimaryCard(String cardId) {
+    state = state.copyWith(
+      cards: state.cards.map((c) {
+        return c.copyWith(isPrimary: c.id == cardId);
+      }).toList(),
+    );
+    // TODO: Save to backend
+  }
+
+  /// Refresh settings
+  Future<void> refresh() => _initialize();
 }
 
-/// Settings state provider
-final settingsStateProvider =
-    StateNotifierProvider<SettingsNotifier, SettingsState>((ref) {
+/// Provider for settings state
+final settingsProvider = StateNotifierProvider<SettingsNotifier, SettingsState>((ref) {
   return SettingsNotifier();
 });
 
-/// Credit card state class
-class CreditCardState {
-  final double creditLimit;
-  final double usedAmount;
-  final DateTime? repaymentDate;
-  final double repaymentAmount;
+/// Computed provider for total credit available
+@riverpod
+double totalCreditAvailable(TotalCreditAvailableRef ref) {
+  final cards = ref.watch(settingsProvider.select((s) => s.cards));
+  return cards.fold(0.0, (sum, card) => sum + card.availableCredit);
+}
 
-  const CreditCardState({
-    this.creditLimit = 5000.0,
-    this.usedAmount = 512.23,
-    this.repaymentDate,
-    this.repaymentAmount = 678.33,
-  });
+/// Computed provider for total credit used
+@riverpod
+double totalCreditUsed(TotalCreditUsedRef ref) {
+  final cards = ref.watch(settingsProvider.select((s) => s.cards));
+  return cards.fold(0.0, (sum, card) => sum + card.usedAmount);
+}
 
-  /// Calculate available credit
-  double get availableCredit => creditLimit - usedAmount;
+/// Computed provider for total credit limit
+@riverpod
+double totalCreditLimit(TotalCreditLimitRef ref) {
+  final cards = ref.watch(settingsProvider.select((s) => s.cards));
+  return cards.fold(0.0, (sum, card) => sum + card.creditLimit);
+}
 
-  /// Calculate progress ratio for progress bar (0.0 to 1.0)
-  double get progressRatio {
-    if (creditLimit == 0) return 0.0;
-    final ratio = usedAmount / creditLimit;
-    return ratio.clamp(0.0, 1.0);
-  }
+/// Computed provider for overall credit utilization ratio
+@riverpod
+double creditUtilizationRatio(CreditUtilizationRatioRef ref) {
+  final used = ref.watch(totalCreditUsedProvider);
+  final limit = ref.watch(totalCreditLimitProvider);
+  return limit > 0 ? used / limit : 0.0;
+}
 
-  CreditCardState copyWith({
-    double? creditLimit,
-    double? usedAmount,
-    DateTime? repaymentDate,
-    double? repaymentAmount,
-  }) {
-    return CreditCardState(
-      creditLimit: creditLimit ?? this.creditLimit,
-      usedAmount: usedAmount ?? this.usedAmount,
-      repaymentDate: repaymentDate ?? this.repaymentDate,
-      repaymentAmount: repaymentAmount ?? this.repaymentAmount,
-    );
+/// Provider for primary card
+@riverpod
+CreditCardModel? primaryCard(PrimaryCardRef ref) {
+  final cards = ref.watch(settingsProvider.select((s) => s.cards));
+  try {
+    return cards.firstWhere((card) => card.isPrimary);
+  } catch (_) {
+    return cards.isNotEmpty ? cards.first : null;
   }
 }
 
-/// Credit card state notifier
-class CreditCardNotifier extends StateNotifier<CreditCardState> {
-  CreditCardNotifier() : super(const CreditCardState());
+/// Provider for notification settings
+final notificationSettingsProvider = Provider<NotificationSettings>((ref) {
+  return ref.watch(settingsProvider.select((s) => s.notifications));
+});
 
-  void updateUsedAmount(double amount) {
-    state = state.copyWith(usedAmount: amount);
-  }
+/// Provider for security settings
+final securitySettingsProvider = Provider<SecuritySettings>((ref) {
+  return ref.watch(settingsProvider.select((s) => s.security));
+});
 
-  void updateCreditLimit(double limit) {
-    state = state.copyWith(creditLimit: limit);
-  }
-
-  void updateRepaymentAmount(double amount) {
-    state = state.copyWith(repaymentAmount: amount);
-  }
-}
-
-/// Credit card provider
-final creditCardProvider =
-    StateNotifierProvider<CreditCardNotifier, CreditCardState>((ref) {
-  return CreditCardNotifier();
+/// Provider for user profile
+final userProfileProvider = Provider<UserProfile?>((ref) {
+  return ref.watch(settingsProvider.select((s) => s.profile));
 });

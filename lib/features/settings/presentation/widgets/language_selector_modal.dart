@@ -1,174 +1,191 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
-import '../../../../core/theme/theme.dart';
+import '../../../../core/theme/spacing_tokens.dart';
+import '../../../../core/theme/app_typography.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/localization/app_language.dart';
 import '../../../../core/localization/app_strings.dart';
 
-/// A reusable language selector modal bottom sheet.
-/// Displays available languages with flags and allows selection.
+/// Language selector modal bottom sheet
 class LanguageSelectorModal extends ConsumerWidget {
-  final AppLanguage currentLanguage;
-
-  const LanguageSelectorModal({
-    super.key,
-    required this.currentLanguage,
-  });
-
-  /// Show the language selector modal
-  static Future<void> show(
-    BuildContext context,
-    WidgetRef ref,
-    AppLanguage currentLanguage,
-  ) {
-    return showModalBottomSheet(
-      context: context,
-      backgroundColor: const Color(0xFFFDFCF8),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(SpacingTokens.spacing16),
-        ),
-      ),
-      builder: (ctx) => LanguageSelectorModal(currentLanguage: currentLanguage),
-    );
-  }
+  const LanguageSelectorModal({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final strings = ref.watch(stringsProvider);
-
-    return SafeArea(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Header
-          SizedBox(
-            height: 56,
-            child: Row(
-              children: [
-                SizedBox(
-                  width: 56,
-                  height: 56,
-                  child: Center(
-                    child: GestureDetector(
-                      onTap: () => Navigator.pop(context),
-                      behavior: HitTestBehavior.opaque,
-                      child: const SizedBox(
-                        width: 44,
-                        height: 44,
-                        child: Center(
-                          child: Icon(
-                            PhosphorIconsRegular.x,
-                            size: 18,
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: Center(
-                    child: Text(
-                      strings.languageLabel,
-                      style: const TextStyle(
-                        fontSize: 18.0,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary,
-                        fontFamily: 'Roboto',
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 56),
-              ],
+    final currentLanguage = ref.watch(languageProvider);
+    
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(SpacingTokens.radius20),
+          topRight: Radius.circular(SpacingTokens.radius20),
+        ),
+      ),
+      child: SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Handle bar
+            Container(
+              margin: const EdgeInsets.only(top: SpacingTokens.spacing12),
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: const Color(0xFFEDEDED),
+                borderRadius: BorderRadius.circular(2),
+              ),
             ),
-          ),
-          Container(height: 0.5, color: AppColors.divider),
-          SpacingTokens.gapV8,
-          // Language options
-          ...AppLanguage.values.asMap().entries.map((entry) {
-            final index = entry.key;
-            final language = entry.value;
-            final isSelected = language == currentLanguage;
-            final isLast = index == AppLanguage.values.length - 1;
-
-            return Column(
-              children: [
-                Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: () {
-                      HapticFeedback.selectionClick();
-                      ref.read(languageProvider.notifier).setLanguage(language);
-                      Navigator.pop(context);
-                    },
-                    child: SizedBox(
-                      height: 52.0,
-                      child: Padding(
-                        padding: SpacingTokens.paddingHorizontal20,
-                        child: Row(
-                          children: [
-                            Text(
-                              _getLanguageFlag(language),
-                              style: const TextStyle(fontSize: 20),
-                            ),
-                            SpacingTokens.gapH8,
-                            Expanded(
-                              child: Text(
-                                language.nativeName,
-                                style: TextStyle(
-                                  fontSize: 14.0,
-                                  color: isSelected
-                                      ? AppColors.accent
-                                      : AppColors.textPrimary,
-                                  fontWeight: isSelected
-                                      ? FontWeight.w500
-                                      : FontWeight.w400,
-                                  fontFamily: 'Roboto',
-                                ),
-                              ),
-                            ),
-                            if (isSelected)
-                              const Icon(
-                                PhosphorIconsRegular.check,
-                                size: 20,
-                                color: AppColors.accent,
-                              ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
+            
+            SpacingTokens.gapV20,
+            
+            // Title
+            Padding(
+              padding: SpacingTokens.paddingHorizontal20,
+              child: Text(
+                strings.language,
+                style: AppTypography.titleMedium.copyWith(
+                  color: const Color(0xFF101010),
+                  fontWeight: FontWeight.w600,
                 ),
-                if (!isLast)
-                  Container(
-                    margin: const EdgeInsets.only(
-                      left: SpacingTokens.spacing16,
-                      right: SpacingTokens.spacing16,
-                    ),
-                    height: 0.5,
-                    color: AppColors.divider,
-                  ),
-              ],
-            );
-          }),
-          SpacingTokens.gapV16,
-        ],
+              ),
+            ),
+            
+            SpacingTokens.gapV16,
+            
+            // Language options
+            ...AppLanguage.values.map((language) {
+              final isSelected = currentLanguage == language;
+              return _LanguageOption(
+                language: language,
+                isSelected: isSelected,
+                onTap: () {
+                  ref.read(languageProvider.notifier).setLanguage(language);
+                  Navigator.of(context).pop();
+                },
+              );
+            }),
+            
+            SpacingTokens.gapV16,
+          ],
+        ),
       ),
     );
   }
 
-  String _getLanguageFlag(AppLanguage language) {
+  /// Show the language selector modal
+  static void show(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const LanguageSelectorModal(),
+    );
+  }
+}
+
+class _LanguageOption extends StatelessWidget {
+  final AppLanguage language;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _LanguageOption({
+    required this.language,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  String get _languageName {
     switch (language) {
-      case AppLanguage.uzbekCyrillic:
-      case AppLanguage.uzbekLatin:
-        return '🇺🇿';
-      case AppLanguage.russian:
-        return '🇷🇺';
-      case AppLanguage.english:
-        return '🇬🇧';
+      case AppLanguage.en:
+        return 'English';
+      case AppLanguage.ru:
+        return 'Русский';
+      case AppLanguage.uz:
+        return 'O'zbekcha';
+      case AppLanguage.uzCyrl:
+        return 'Ўзбекча';
     }
+  }
+
+  String get _languageCode {
+    switch (language) {
+      case AppLanguage.en:
+        return 'EN';
+      case AppLanguage.ru:
+        return 'RU';
+      case AppLanguage.uz:
+        return 'UZ';
+      case AppLanguage.uzCyrl:
+        return 'UZ';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: SpacingTokens.spacing20,
+          vertical: SpacingTokens.spacing16,
+        ),
+        child: Row(
+          children: [
+            // Language flag/icon (you can replace with actual flag images)
+            Container(
+              width: SpacingTokens.spacing40,
+              height: SpacingTokens.spacing40,
+              decoration: BoxDecoration(
+                color: isSelected 
+                    ? AppColors.accent.withOpacity(0.1)
+                    : const Color(0xFFF5F5F5),
+                borderRadius: SpacingTokens.borderRadius8,
+              ),
+              child: Center(
+                child: Text(
+                  _languageCode,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: isSelected ? AppColors.accent : const Color(0xFF606060),
+                  ),
+                ),
+              ),
+            ),
+            
+            SpacingTokens.gapH12,
+            
+            // Language name
+            Expanded(
+              child: Text(
+                _languageName,
+                style: AppTypography.bodyMedium.copyWith(
+                  color: const Color(0xFF101010),
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                ),
+              ),
+            ),
+            
+            // Selection indicator
+            if (isSelected)
+              Container(
+                width: 20,
+                height: 20,
+                decoration: BoxDecoration(
+                  color: AppColors.accent,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.check,
+                  size: 14,
+                  color: Colors.white,
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
   }
 }

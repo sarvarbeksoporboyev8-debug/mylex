@@ -1,49 +1,54 @@
 import 'package:flutter/material.dart';
-import '../../../../core/theme/theme.dart';
+import '../../../../core/theme/spacing_tokens.dart';
+import '../../../../core/theme/app_typography.dart';
 
-/// A reusable section container widget for settings screens.
-/// Provides consistent styling for grouping related settings items.
+/// Reusable settings section with title and content
 class SettingsSection extends StatelessWidget {
   final String? title;
   final Widget child;
-  final EdgeInsetsGeometry? padding;
+  final EdgeInsets? padding;
+  final EdgeInsets? margin;
 
   const SettingsSection({
     super.key,
     this.title,
     required this.child,
     this.padding,
+    this.margin,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (title != null) ...[
-          Padding(
-            padding: const EdgeInsets.only(
-              bottom: SpacingTokens.spacing4,
-              left: SpacingTokens.spacing4,
-            ),
-            child: Text(
-              title!,
-              style: AppTypography.bodySmall.copyWith(
-                color: const Color(0xFF606060),
+    return Padding(
+      padding: margin ?? EdgeInsets.zero,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (title != null) ...[
+            Padding(
+              padding: const EdgeInsets.only(bottom: SpacingTokens.spacing4, left: SpacingTokens.spacing4),
+              child: Text(
+                title!,
+                style: AppTypography.bodySmall.copyWith(
+                  color: const Color(0xFF606060),
+                  fontSize: 14,
+                ),
               ),
             ),
+          ],
+          Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: SpacingTokens.borderRadius12,
+              border: Border.all(color: const Color(0xFFEDEDED)),
+            ),
+            padding: padding ?? SpacingTokens.padding12,
+            child: child,
           ),
         ],
-        Container(
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: SpacingTokens.borderRadiusXLarge,
-            border: Border.all(color: const Color(0xFFEDEDED)),
-          ),
-          child: padding != null ? Padding(padding: padding!, child: child) : child,
-        ),
-      ],
+      ),
     );
   }
 }

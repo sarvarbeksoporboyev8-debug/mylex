@@ -79,6 +79,9 @@ class SpacingTokens {
   /// 88px - Large header height
   static const double spacing88 = 88.0;
   
+  /// 80px - Large spacing
+  static const double spacing80 = 80.0;
+  
   /// 106px - Extra large component
   static const double spacing106 = 106.0;
   

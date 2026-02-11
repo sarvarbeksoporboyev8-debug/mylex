@@ -2,37 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+
 import '../../../../core/localization/app_strings.dart';
-
-import '../../../../core/theme/app_colors.dart';
-
-enum NotificationType {
-  paymentSuccess,
-  paymentUpdate,
-  securityUpdate,
-  promoUpdated,
-}
+import '../../../../core/theme/theme.dart';
+import '../../../../core/theme/spacing_tokens.dart';
+import '../../domain/providers/settings_providers.dart';
+import '../widgets/notification_card.dart';
 
 enum NotificationFilter {
   all,
   payment,
-  updates,
-}
-
-class NotificationItem {
-  final NotificationType type;
-  final String title;
-  final String description;
-  final String timestamp;
-  final bool isActive;
-
-  NotificationItem({
-    required this.type,
-    required this.title,
-    required this.description,
-    required this.timestamp,
-    this.isActive = true,
-  });
+  security,
+  account,
 }
 
 class NotificationsScreen extends ConsumerStatefulWidget {
@@ -45,83 +26,57 @@ class NotificationsScreen extends ConsumerStatefulWidget {
 class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
   NotificationFilter _selectedFilter = NotificationFilter.all;
 
-  // Mock data - replace with real data from your backend/provider
-  final List<NotificationItem> _allNotifications = [
-    NotificationItem(
-      type: NotificationType.paymentSuccess,
-      title: 'Payment Successful',
-      description: 'Yoru payment of \$250 for Eelectronics Store has been processed successfully.',
-      timestamp: '2 hours ago',
-      isActive: true,
-    ),
-    NotificationItem(
-      type: NotificationType.paymentUpdate,
-      title: 'Upcoming Payment Reminder',
-      description: 'Your next payment of \$300 is  due on Feb 15, 2025.',
-      timestamp: 'Yasterday',
-      isActive: false,
-    ),
-    NotificationItem(
-      type: NotificationType.securityUpdate,
-      title: 'Security Update',
-      description: 'We\'ve added new security features to project your account.',
-      timestamp: '2 days ago',
-      isActive: false,
-    ),
-    NotificationItem(
-      type: NotificationType.promoUpdated,
-      title: 'Special Offer Available',
-      description: 'Get 0% interest on purchases above \$1000 for 6 months.',
-      timestamp: '2 days ago',
-      isActive: false,
-    ),
-  ];
-
-  List<NotificationItem> get _filteredNotifications {
+  String? get _filterType {
     switch (_selectedFilter) {
       case NotificationFilter.all:
-        return _allNotifications;
+        return null;
       case NotificationFilter.payment:
-        return _allNotifications
-            .where((n) =>
-                n.type == NotificationType.paymentSuccess ||
-                n.type == NotificationType.paymentUpdate)
-            .toList();
-      case NotificationFilter.updates:
-        return _allNotifications
-            .where((n) =>
-                n.type == NotificationType.securityUpdate ||
-                n.type == NotificationType.promoUpdated)
-            .toList();
+        return 'payment';
+      case NotificationFilter.security:
+        return 'security';
+      case NotificationFilter.account:
+        return 'account';
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final strings = ref.watch(stringsProvider);
+    final notifications = ref.watch(filteredNotificationsProvider(_filterType));
+    final unreadCount = ref.watch(unreadNotificationsCountProvider);
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.backgroundSecondary,
       body: SafeArea(
         child: Column(
           children: [
-            // Header - h-[60px], pb-[12px] pt-[8px] px-[20px]
-            _buildHeader(context),
+            // Header
+            _buildHeader(context, strings, unreadCount),
             // Filter chips
-            _buildFilterChips(),
-            // Content
+            _buildFilterChips(strings),
+            // Notifications list
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
-                child: Column(
-                  children: [
-                    ..._filteredNotifications
-                        .map((notification) => Padding(
-                              padding: const EdgeInsets.only(bottom: 12),
-                              child: _buildNotificationCard(notification),
-                            ))
-                        .toList(),
-                  ],
-                ),
-              ),
+              child: notifications.isEmpty
+                  ? _buildEmptyState(strings)
+                  : ListView.builder(
+                      itemCount: notifications.length,
+                      itemBuilder: (context, index) {
+                        final notification = notifications[index];
+                        return NotificationCard(
+                          notification: notification,
+                          onTap: () {
+                            ref
+                                .read(notificationsProvider.notifier)
+                                .markAsRead(notification.id);
+                          },
+                          onDismiss: () {
+                            ref
+                                .read(notificationsProvider.notifier)
+                                .removeNotification(notification.id);
+                          },
+                        );
+                      },
+                    ),
             ),
           ],
         ),
@@ -129,80 +84,71 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
+  Widget _buildHeader(BuildContext context, AppStrings strings, int unreadCount) {
     return SizedBox(
-      height: 60,
+      height: SpacingTokens.spacing60,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Stack(
-          alignment: Alignment.center,
+        padding: SpacingTokens.horizontalPadding20,
+        child: Row(
           children: [
-            Align(
-              alignment: Alignment.centerLeft,
-              child: GestureDetector(
-                onTap: () => context.pop(),
-                child: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    border: Border.all(color: const Color(0xFFEDEDED)),
-                    borderRadius: BorderRadius.circular(10),
-                    color: Colors.white,
-                  ),
-                  child: const Icon(
-                    PhosphorIconsRegular.caretLeft,
-                    size: 20,
-                    color: Color(0xFF101010),
-                  ),
+            GestureDetector(
+              onTap: () => context.pop(),
+              child: Container(
+                width: SpacingTokens.spacing44,
+                height: SpacingTokens.spacing44,
+                decoration: BoxDecoration(
+                  border: Border.all(color: const Color(0xFFEDEDED)),
+                  borderRadius: SpacingTokens.borderRadius10,
+                  color: AppColors.cardBackground,
+                ),
+                child: const Icon(
+                  PhosphorIconsRegular.caretLeft,
+                  size: SpacingTokens.iconSize20,
+                  color: AppColors.textPrimary,
                 ),
               ),
             ),
-            Text(
-              ref.watch(stringsProvider).notification,
-              style: const TextStyle(
-                fontFamily: 'Onest',
-                fontWeight: FontWeight.w500,
-                fontSize: 18,
-                height: 1.5,
-                color: Color(0xFF101010),
+            Expanded(
+              child: Text(
+                strings.notifications,
+                textAlign: TextAlign.center,
+                style: AppTypography.headline4.copyWith(
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
+            SizedBox(width: SpacingTokens.spacing44),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildFilterChips() {
-    final strings = ref.watch(stringsProvider);
+  Widget _buildFilterChips(AppStrings strings) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      child: Row(
+      height: SpacingTokens.spacing60,
+      padding: SpacingTokens.horizontalPadding20,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
         children: [
-          Expanded(
-            child: _buildFilterChip(
-              label: strings.all,
-              isSelected: _selectedFilter == NotificationFilter.all,
-              onTap: () => setState(() => _selectedFilter = NotificationFilter.all),
-            ),
+          _buildFilterChip(
+            label: strings.all,
+            filter: NotificationFilter.all,
           ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: _buildFilterChip(
-              label: strings.payment,
-              isSelected: _selectedFilter == NotificationFilter.payment,
-              onTap: () =>
-                  setState(() => _selectedFilter = NotificationFilter.payment),
-            ),
+          SpacingTokens.horizontalGap8,
+          _buildFilterChip(
+            label: 'Payment',
+            filter: NotificationFilter.payment,
           ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: _buildFilterChip(
-              label: strings.updates,
-              isSelected: _selectedFilter == NotificationFilter.updates,
-              onTap: () =>
-                  setState(() => _selectedFilter = NotificationFilter.updates),
-            ),
+          SpacingTokens.horizontalGap8,
+          _buildFilterChip(
+            label: 'Security',
+            filter: NotificationFilter.security,
+          ),
+          SpacingTokens.horizontalGap8,
+          _buildFilterChip(
+            label: 'Account',
+            filter: NotificationFilter.account,
           ),
         ],
       ),
@@ -211,154 +157,58 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
 
   Widget _buildFilterChip({
     required String label,
-    required bool isSelected,
-    required VoidCallback onTap,
+    required NotificationFilter filter,
   }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF101010) : Colors.white,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Center(
-          child: Text(
-            label,
-            style: TextStyle(
-              fontFamily: 'Onest',
-              fontWeight: FontWeight.w500,
-              fontSize: 12,
-              height: 1.5,
-              color: isSelected ? Colors.white : const Color(0xFF101010),
-            ),
-          ),
+    final isSelected = _selectedFilter == filter;
+    return FilterChip(
+      label: Text(label),
+      selected: isSelected,
+      onSelected: (selected) {
+        setState(() {
+          _selectedFilter = filter;
+        });
+      },
+      backgroundColor: AppColors.cardBackground,
+      selectedColor: AppColors.accent.withOpacity(0.1),
+      checkmarkColor: AppColors.accent,
+      labelStyle: AppTypography.bodySmall.copyWith(
+        color: isSelected ? AppColors.accent : AppColors.textPrimary,
+        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: SpacingTokens.borderRadius10,
+        side: BorderSide(
+          color: isSelected ? AppColors.accent : const Color(0xFFEDEDED),
         ),
       ),
     );
   }
 
-  Widget _buildNotificationCard(NotificationItem notification) {
-    final isActive = notification.isActive;
-    final backgroundColor = isActive ? Colors.white : const Color(0xFFF5F5F5);
-
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFEDEDED)),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildEmptyState(AppStrings strings) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Icon container
-          _buildIconContainer(notification.type, isActive),
-          const SizedBox(width: 12),
-          // Content
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Title row with active indicator
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        notification.title,
-                        style: const TextStyle(
-                          fontFamily: 'Onest',
-                          fontWeight: FontWeight.w500,
-                          fontSize: 14,
-                          height: 1.5,
-                          color: Color(0xFF101010),
-                        ),
-                      ),
-                    ),
-                    if (isActive)
-                      Container(
-                        width: 8,
-                        height: 8,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFE63946), // Error/Main red
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                // Description
-                Text(
-                  notification.description,
-                  style: const TextStyle(
-                    fontFamily: 'Onest',
-                    fontWeight: FontWeight.w400,
-                    fontSize: 12,
-                    height: 1.5,
-                    color: Color(0xFF606060),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                // Timestamp
-                Text(
-                  notification.timestamp,
-                  style: const TextStyle(
-                    fontFamily: 'Onest',
-                    fontWeight: FontWeight.w500,
-                    fontSize: 12,
-                    height: 1.5,
-                    color: Color(0xFF878787),
-                  ),
-                ),
-              ],
+          Icon(
+            PhosphorIconsRegular.bellSlash,
+            size: 64,
+            color: AppColors.textTertiary.withOpacity(0.5),
+          ),
+          SpacingTokens.verticalGap16,
+          Text(
+            'No notifications',
+            style: AppTypography.headline4.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
+          SpacingTokens.verticalGap8,
+          Text(
+            'You\'re all caught up!',
+            style: AppTypography.bodyMedium.copyWith(
+              color: AppColors.textTertiary,
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildIconContainer(NotificationType type, bool isActive) {
-    Color backgroundColor;
-    Color borderColor;
-    IconData icon;
-
-    switch (type) {
-      case NotificationType.paymentSuccess:
-        backgroundColor = AppColors.success.withOpacity(0.08);
-        borderColor = AppColors.success.withOpacity(0.24);
-        icon = PhosphorIconsRegular.check;
-        break;
-      case NotificationType.paymentUpdate:
-        backgroundColor = AppColors.accent.withOpacity(0.08);
-        borderColor = AppColors.accent.withOpacity(0.24);
-        icon = PhosphorIconsRegular.bell;
-        break;
-      case NotificationType.securityUpdate:
-        backgroundColor = isActive
-            ? Colors.white
-            : AppColors.backgroundSecondary;
-        borderColor = AppColors.border;
-        icon = PhosphorIconsRegular.question;
-        break;
-      case NotificationType.promoUpdated:
-        backgroundColor = AppColors.info.withOpacity(0.08);
-        borderColor = AppColors.info.withOpacity(0.24);
-        icon = PhosphorIconsRegular.tag;
-        break;
-    }
-
-    return Container(
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: borderColor),
-      ),
-      child: Icon(
-        icon,
-        size: 20,
-        color: const Color(0xFF101010),
       ),
     );
   }

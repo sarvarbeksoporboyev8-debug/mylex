@@ -1,0 +1,86 @@
+workflows:
+  ios-build:
+    name: iOS Build
+    max_build_duration: 60
+    instance_type: mac_mini_m1
+    environment:
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Get Flutter packages
+        script: flutter pub get
+      
+      - name: Install CocoaPods dependencies
+        script: |
+          cd ios
+          pod install
+      
+      - name: Build iOS (unsigned)
+        script: |
+          flutter build ios --release --no-codesign
+      
+      - name: Create unsigned IPA
+        script: |
+          cd build/ios/iphoneos
+          mkdir -p Payload
+          cp -r Runner.app Payload/
+          zip -r ../../../lex-uz-ai-unsigned.ipa Payload
+    
+    artifacts:
+      - build/*.ipa
+      - build/ios/iphoneos/Runner.app
+
+  ios-signed:
+    name: iOS Signed Build
+    max_build_duration: 60
+    instance_type: mac_mini_m1
+    environment:
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+      groups:
+        - ios_credentials  # Add your signing credentials in Codemagic UI
+    scripts:
+      - name: Get Flutter packages
+        script: flutter pub get
+      
+      - name: Install CocoaPods dependencies
+        script: |
+          cd ios
+          pod install
+      
+      - name: Set up code signing
+        script: |
+          keychain initialize
+          app-store-connect fetch-signing-files "com.lexuz.ai" --type IOS_APP_DEVELOPMENT
+          keychain add-certificates
+          xcode-project use-profiles
+      
+      - name: Build iOS
+        script: |
+          flutter build ipa --release --export-options-plist=/Users/builder/export_options.plist
+    
+    artifacts:
+      - build/ios/ipa/*.ipa
+    
+    publishing:
+      email:
+        recipients:
+          - your-email@example.com  # Change this
+
+  android-build:
+    name: Android Build
+    max_build_duration: 30
+    instance_type: mac_mini_m1
+    environment:
+      flutter: stable
+    scripts:
+      - name: Get Flutter packages
+        script: flutter pub get
+      
+      - name: Build APK
+        script: flutter build apk --release
+    
+    artifacts:
+      - build/app/outputs/flutter-apk/*.apk

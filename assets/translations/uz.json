@@ -1,0 +1,51 @@
+{
+  "app_name": "Lex.uz AI",
+  "tabs": {
+    "constitution": "Konstitutsiya",
+    "codes": "Kodekslar",
+    "chat": "Chatbot",
+    "laws": "Qonunlar",
+    "news": "Yangiliklar"
+  },
+  "auth": {
+    "login": "Kirish",
+    "signup": "Ro'yxatdan o'tish",
+    "phone": "Telefon raqami",
+    "password": "Parol",
+    "name": "Ism",
+    "create_account": "Hisob yaratish",
+    "already_have_account": "Hisobingiz bormi?",
+    "dont_have_account": "Hisobingiz yo'qmi?",
+    "enter_pin": "PIN kodni kiriting",
+    "create_pin": "PIN kod yarating",
+    "confirm_pin": "PIN kodni tasdiqlang",
+    "use_biometrics": "Face ID / Touch ID ishlatish"
+  },
+  "common": {
+    "search": "Qidirish",
+    "all": "Hammasi",
+    "favorites": "Sevimlilar",
+    "downloaded": "Yuklab olingan",
+    "share": "Ulashish",
+    "download": "Yuklab olish",
+    "retry": "Qayta urinish",
+    "no_results": "Natija topilmadi",
+    "loading": "Yuklanmoqda...",
+    "error": "Xatolik yuz berdi"
+  },
+  "chat": {
+    "new_chat": "Yangi suhbat",
+    "today": "Bugun",
+    "this_week": "Bu hafta",
+    "older": "Oldingi",
+    "type_message": "Xabar yozing...",
+    "summarize": "Qisqartirish",
+    "find_article": "Moddani topish",
+    "explain_simple": "Oddiy tilda tushuntirish",
+    "draft_complaint": "Ariza loyihasi"
+  },
+  "constitution": {
+    "table_of_contents": "Mundarija",
+    "bookmark": "Saqlash"
+  }
+}

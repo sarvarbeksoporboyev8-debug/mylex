@@ -1,0 +1,54 @@
+name: Scrape News Daily
+
+on:
+  schedule:
+    # Run daily at 6:00 AM UTC (11:00 AM Uzbekistan time)
+    - cron: '0 6 * * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout app repo (for scraper script)
+        uses: actions/checkout@v4
+        with:
+          path: app
+      
+      - name: Checkout news data repo
+        uses: actions/checkout@v4
+        with:
+          repository: sarvarbeksoporboyev8-debug/mylex-news-data
+          token: ${{ secrets.NEWS_REPO_TOKEN }}
+          path: news-data
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Run scraper
+        run: |
+          cd app
+          python scripts/scrape_news.py --output ../news-data
+      
+      - name: Check for changes
+        id: changes
+        working-directory: news-data
+        run: |
+          git add -A
+          if git diff --staged --quiet; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Commit and push to news-data repo
+        if: steps.changes.outputs.has_changes == 'true'
+        working-directory: news-data
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git commit -m "Update news data $(date -u +%Y-%m-%d)"
+          git push

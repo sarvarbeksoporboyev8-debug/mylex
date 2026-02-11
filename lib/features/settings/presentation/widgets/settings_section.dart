@@ -36,7 +36,6 @@ class SettingsSection extends StatelessWidget {
                 ),
               ),
             ),
-            SpacingTokens.gapV4,
           ],
           Container(
             width: double.infinity,

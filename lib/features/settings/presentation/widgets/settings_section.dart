@@ -27,7 +27,7 @@ class SettingsSection extends StatelessWidget {
         children: [
           if (title != null) ...[
             Padding(
-              padding: SpacingTokens.paddingHorizontal20,
+              padding: const EdgeInsets.only(bottom: SpacingTokens.spacing4, left: SpacingTokens.spacing4),
               child: Text(
                 title!,
                 style: AppTypography.bodySmall.copyWith(
@@ -36,7 +36,7 @@ class SettingsSection extends StatelessWidget {
                 ),
               ),
             ),
-            SpacingTokens.gapV8,
+            SpacingTokens.gapV4,
           ],
           Container(
             width: double.infinity,

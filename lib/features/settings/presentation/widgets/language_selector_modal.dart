@@ -103,7 +103,7 @@ class _LanguageOption extends StatelessWidget {
       case AppLanguage.ru:
         return 'Русский';
       case AppLanguage.uz:
-        return 'O\'zbekcha';
+        return 'O`zbekcha';
       case AppLanguage.uzCyrl:
         return 'Ўзбекча';
     }

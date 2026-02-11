@@ -161,7 +161,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         height: SpacingTokens.spacing44,
         decoration: BoxDecoration(
           border: Border.all(color: const Color(0xFFEDEDED)),
-          borderRadius: SpacingTokens.borderRadius12,
+          borderRadius: BorderRadius.circular(SpacingTokens.radius10),
           color: Colors.white,
         ),
         child: const Icon(

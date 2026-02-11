@@ -17,12 +17,13 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
       // TODO: Load settings from backend/local storage
       await Future.delayed(const Duration(milliseconds: 500));
       
-      // Mock data - replace with real API call
+      // Mock data - TODO: Replace with real API call
+      // Using placeholder values until backend integration is complete
       final profile = UserProfile(
         id: '1',
-        name: 'John Doe',
-        email: 'john.doe@example.com',
-        phone: '+1234567890',
+        name: 'Ali Muhajirin',
+        email: 'helloali@gmail.com',
+        phone: '+1 (555) 123-4567',
       );
       
       final cards = [

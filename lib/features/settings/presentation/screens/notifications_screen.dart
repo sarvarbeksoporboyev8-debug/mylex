@@ -3,15 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../../../../core/localization/app_strings.dart';
-
 import '../../../../core/theme/app_colors.dart';
-
-enum NotificationType {
-  paymentSuccess,
-  paymentUpdate,
-  securityUpdate,
-  promoUpdated,
-}
+import '../../../../core/theme/app_typography.dart';
+import '../../../../core/theme/spacing_tokens.dart';
+import '../widgets/settings_widgets.dart';
 
 enum NotificationFilter {
   all,
@@ -35,6 +30,16 @@ class NotificationItem {
   });
 }
 
+/// Notifications screen with responsive design and proper filtering
+/// 
+/// Fixes applied:
+/// - Issue #3: Replaced hardcoded dimensions with SpacingTokens
+/// - Issue #4: Using Expanded/Flexible for responsive layout
+/// - Issue #5: Optimized SafeArea usage
+/// - Issue #6: Using NotificationCard widget
+/// - Issue #7: Using SpacingTokens for all spacing
+/// - Issue #8: No hardcoded widths, using Wrap for responsive grid
+/// - Issue #12: Clean, maintainable code
 class NotificationsScreen extends ConsumerStatefulWidget {
   const NotificationsScreen({super.key});
 

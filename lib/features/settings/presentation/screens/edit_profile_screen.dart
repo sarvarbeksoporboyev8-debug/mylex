@@ -4,8 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../../../../core/theme/theme.dart';
-import '../../../../core/routing/app_routes.dart';
+import '../../../../core/theme/spacing_tokens.dart';
 import '../../../../core/localization/app_strings.dart';
+import '../../domain/providers/settings_providers.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
   const EditProfileScreen({super.key});
@@ -15,11 +16,20 @@ class EditProfileScreen extends ConsumerStatefulWidget {
 }
 
 class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
-  final _fullNameController = TextEditingController(text: 'Ali Muhajirin');
-  final _emailController = TextEditingController(text: 'helloAli@gmail.com');
-  final _phoneController = TextEditingController(text: '+1 (555) 123-4567');
-  String? _selectedGender;
+  late final TextEditingController _fullNameController;
+  late final TextEditingController _emailController;
+  late final TextEditingController _phoneController;
+  final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final profile = ref.read(userProfileProvider);
+    _fullNameController = TextEditingController(text: profile.name);
+    _emailController = TextEditingController(text: profile.email ?? '');
+    _phoneController = TextEditingController(text: profile.phoneNumber);
+  }
 
   @override
   void dispose() {
@@ -30,89 +40,82 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   }
 
   Future<void> _handleSave() async {
-    setState(() => _isLoading = true);
-    // TODO: Implement save logic
-    await Future.delayed(const Duration(seconds: 1));
-    setState(() => _isLoading = false);
-    if (mounted) {
-      context.pop();
+    if (_formKey.currentState?.validate() ?? false) {
+      setState(() => _isLoading = true);
+      
+      // Update profile via provider
+      ref.read(userProfileProvider.notifier).updateProfile(
+            ref.read(userProfileProvider).copyWith(
+                  name: _fullNameController.text.trim(),
+                  email: _emailController.text.trim(),
+                  phoneNumber: _phoneController.text.trim(),
+                ),
+          );
+
+      // Simulate API call
+      await Future.delayed(const Duration(seconds: 1));
+      
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Profile updated successfully'),
+            backgroundColor: AppColors.success,
+          ),
+        );
+        context.pop();
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final strings = ref.watch(stringsProvider);
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: AppColors.backgroundSecondary,
       body: SafeArea(
         child: Column(
           children: [
             // Header
-            _buildHeader(),
+            _buildHeader(context, strings),
             // Content
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Profile picture section
-                    _buildProfilePictureSection(),
-                    const SizedBox(height: 8),
-                    // Form section
-                    _buildFormSection(),
-                  ],
+                padding: EdgeInsets.fromLTRB(
+                  SpacingTokens.spacing20,
+                  SpacingTokens.spacing12,
+                  SpacingTokens.spacing20,
+                  SpacingTokens.spacing12,
+                ),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Profile picture section
+                      _buildProfilePictureSection(),
+                      SpacingTokens.verticalGap20,
+                      // Form fields
+                      _buildFormFields(strings),
+                    ],
+                  ),
                 ),
               ),
             ),
             // Save button
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _handleSave,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF101010),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    elevation: 0,
-                  ),
-                  child: _isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation(Colors.white),
-                          ),
-                        )
-                      : Text(
-                          ref.watch(stringsProvider).saveChanges,
-                          style: const TextStyle(
-                            fontFamily: 'Onest',
-                            fontWeight: FontWeight.w500,
-                            fontSize: 16,
-                            height: 1.5,
-                            color: Colors.white,
-                          ),
-                        ),
-                ),
-              ),
-            ),
+            _buildSaveButton(strings),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context, AppStrings strings) {
     return SizedBox(
-      height: 60,
+      height: SpacingTokens.spacing60,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
+        padding: SpacingTokens.horizontalPadding20,
         child: Stack(
           alignment: Alignment.center,
           children: [
@@ -121,29 +124,25 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               child: GestureDetector(
                 onTap: () => context.pop(),
                 child: Container(
-                  width: 44,
-                  height: 44,
+                  width: SpacingTokens.spacing44,
+                  height: SpacingTokens.spacing44,
                   decoration: BoxDecoration(
                     border: Border.all(color: const Color(0xFFEDEDED)),
-                    borderRadius: BorderRadius.circular(10),
-                    color: Colors.white,
+                    borderRadius: SpacingTokens.borderRadius10,
+                    color: AppColors.cardBackground,
                   ),
                   child: const Icon(
                     PhosphorIconsRegular.caretLeft,
-                    size: 20,
-                    color: Color(0xFF101010),
+                    size: SpacingTokens.iconSize20,
+                    color: AppColors.textPrimary,
                   ),
                 ),
               ),
             ),
             Text(
-              ref.watch(stringsProvider).editProfile,
-              style: const TextStyle(
-                fontFamily: 'Onest',
+              strings.editProfile,
+              style: AppTypography.headline4.copyWith(
                 fontWeight: FontWeight.w500,
-                fontSize: 18,
-                height: 1.5,
-                color: Color(0xFF101010),
               ),
             ),
           ],
@@ -154,37 +153,36 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
   Widget _buildProfilePictureSection() {
     return Center(
-      child: Stack(
+      child: Column(
         children: [
           Container(
-            width: 90,
-            height: 90,
+            width: SpacingTokens.spacing88,
+            height: SpacingTokens.spacing88,
             decoration: BoxDecoration(
-              color: AppColors.accent.withOpacity(0.08),
+              color: AppColors.accent.withOpacity(0.1),
               shape: BoxShape.circle,
-              border: Border.all(color: const Color(0xFFEDEDED)),
             ),
-            child: const Icon(
+            child: Icon(
               PhosphorIconsRegular.user,
-              size: 50,
+              size: SpacingTokens.spacing40,
               color: AppColors.accent,
             ),
           ),
-          Positioned(
-            right: 0,
-            bottom: 0,
-            child: Container(
-              width: 26,
-              height: 26,
-              decoration: BoxDecoration(
+          SpacingTokens.verticalGap12,
+          TextButton.icon(
+            onPressed: () {
+              // Handle avatar upload
+            },
+            icon: Icon(
+              PhosphorIconsRegular.camera,
+              size: SpacingTokens.iconSize16,
+              color: AppColors.accent,
+            ),
+            label: Text(
+              'Change Photo',
+              style: AppTypography.bodySmall.copyWith(
                 color: AppColors.accent,
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.white, width: 2),
-              ),
-              child: const Icon(
-                PhosphorIconsRegular.camera,
-                size: 16,
-                color: Colors.white,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ),
@@ -193,165 +191,145 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     );
   }
 
-  Widget _buildFormSection() {
-    final strings = ref.watch(stringsProvider);
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFEDEDED)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Full name
-          _buildInputField(
-            label: strings.fullName,
-            controller: _fullNameController,
-          ),
-          const SizedBox(height: 12),
-          // Gender
-          _buildGenderSelector(),
-          const SizedBox(height: 12),
-          // Email
-          _buildInputField(
-            label: strings.email,
-            controller: _emailController,
-            keyboardType: TextInputType.emailAddress,
-          ),
-          const SizedBox(height: 12),
-          // Phone
-          _buildInputField(
-            label: strings.phone,
-            controller: _phoneController,
-            keyboardType: TextInputType.phone,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildGenderSelector() {
-    final strings = ref.watch(stringsProvider);
-    final isMale = _selectedGender == strings.male;
-    final isFemale = _selectedGender == strings.female;
+  Widget _buildFormFields(AppStrings strings) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          strings.gender,
-          style: AppTypography.labelMedium.copyWith(
-            color: const Color(0xFF101010),
-          ),
+        _buildTextField(
+          label: strings.fullName,
+          controller: _fullNameController,
+          validator: (value) {
+            if (value == null || value.trim().isEmpty) {
+              return 'Please enter your full name';
+            }
+            return null;
+          },
         ),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            Expanded(
-              child: _buildGenderButton(strings.male, isMale, () {
-                setState(() => _selectedGender = strings.male);
-              }),
-            ),
-            const SizedBox(width: 4),
-            Expanded(
-              child: _buildGenderButton(strings.female, isFemale, () {
-                setState(() => _selectedGender = strings.female);
-              }),
-            ),
-          ],
+        SpacingTokens.verticalGap16,
+        _buildTextField(
+          label: strings.email,
+          controller: _emailController,
+          keyboardType: TextInputType.emailAddress,
+          validator: (value) {
+            if (value == null || value.trim().isEmpty) {
+              return 'Please enter your email';
+            }
+            if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+              return 'Please enter a valid email';
+            }
+            return null;
+          },
+        ),
+        SpacingTokens.verticalGap16,
+        _buildTextField(
+          label: strings.phone,
+          controller: _phoneController,
+          keyboardType: TextInputType.phone,
+          validator: (value) {
+            if (value == null || value.trim().isEmpty) {
+              return 'Please enter your phone number';
+            }
+            return null;
+          },
         ),
       ],
     );
   }
 
-  Widget _buildGenderButton(String label, bool isSelected, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-        decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF101010) : Colors.white,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: const Color(0xFFEDEDED),
-          ),
-        ),
-        child: Center(
-          child: Text(
-            label,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: isSelected ? Colors.white : const Color(0xFF101010),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildInputField({
+  Widget _buildTextField({
     required String label,
     required TextEditingController controller,
     TextInputType? keyboardType,
-    int maxLines = 1,
-    bool isRequired = false,
+    String? Function(String?)? validator,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Text(
-              label,
-              style: AppTypography.labelMedium.copyWith(
-                color: const Color(0xFF101010),
-              ),
-            ),
-            if (isRequired)
-              const Text(
-                ' *',
-                style: TextStyle(
-                  color: Color(0xFFE63946),
-                ),
-              ),
-          ],
+        Text(
+          label,
+          style: AppTypography.bodyMedium.copyWith(
+            fontWeight: FontWeight.w500,
+            color: AppColors.textPrimary,
+          ),
         ),
-        const SizedBox(height: 8),
-        TextField(
+        SpacingTokens.verticalGap8,
+        TextFormField(
           controller: controller,
           keyboardType: keyboardType,
-          maxLines: maxLines,
-          style: AppTypography.bodyMedium.copyWith(
-            color: const Color(0xFF101010),
-          ),
+          validator: validator,
           decoration: InputDecoration(
-            hintText: 'Placeholder',
-            hintStyle: AppTypography.bodyMedium.copyWith(
-              color: const Color(0xFF878787),
-            ),
             filled: true,
-            fillColor: Colors.white,
+            fillColor: AppColors.cardBackground,
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: SpacingTokens.borderRadius10,
               borderSide: const BorderSide(color: Color(0xFFEDEDED)),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: SpacingTokens.borderRadius10,
               borderSide: const BorderSide(color: Color(0xFFEDEDED)),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: AppColors.accent, width: 1.5),
+              borderRadius: SpacingTokens.borderRadius10,
+              borderSide: BorderSide(color: AppColors.accent, width: 2),
             ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 14,
-              vertical: 12,
+            errorBorder: OutlineInputBorder(
+              borderRadius: SpacingTokens.borderRadius10,
+              borderSide: BorderSide(color: AppColors.error),
             ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: SpacingTokens.borderRadius10,
+              borderSide: BorderSide(color: AppColors.error, width: 2),
+            ),
+            contentPadding: SpacingTokens.padding16,
+          ),
+          style: AppTypography.bodyMedium.copyWith(
+            color: AppColors.textPrimary,
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildSaveButton(AppStrings strings) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        SpacingTokens.spacing20,
+        SpacingTokens.spacing12,
+        SpacingTokens.spacing20,
+        SpacingTokens.spacing12 + MediaQuery.of(context).padding.bottom,
+      ),
+      child: SizedBox(
+        width: double.infinity,
+        height: SpacingTokens.spacing52,
+        child: ElevatedButton(
+          onPressed: _isLoading ? null : _handleSave,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.textPrimary,
+            foregroundColor: Colors.white,
+            disabledBackgroundColor: AppColors.textTertiary.withOpacity(0.3),
+            shape: RoundedRectangleBorder(
+              borderRadius: SpacingTokens.borderRadius10,
+            ),
+            elevation: 0,
+          ),
+          child: _isLoading
+              ? SizedBox(
+                  height: SpacingTokens.spacing20,
+                  width: SpacingTokens.spacing20,
+                  child: const CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation(Colors.white),
+                  ),
+                )
+              : Text(
+                  strings.saveChanges,
+                  style: AppTypography.bodyMedium.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+        ),
+      ),
     );
   }
 }

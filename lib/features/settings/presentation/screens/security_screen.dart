@@ -5,38 +5,80 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../../../../core/routing/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/theme/spacing_tokens.dart';
 import '../../../../core/localization/app_strings.dart';
+import '../../domain/providers/settings_providers.dart';
+import '../widgets/settings_widgets.dart';
 
-class SecurityScreen extends ConsumerStatefulWidget {
+/// Security settings screen with proper state management
+/// 
+/// Fixes applied:
+/// - Issue #3: Replaced hardcoded dimensions with SpacingTokens
+/// - Issue #4: Removed Stack/Positioned, using proper Row layout
+/// - Issue #5: Optimized SafeArea usage
+/// - Issue #7: Using SpacingTokens for all spacing
+/// - Issue #9: Using Riverpod providers for state
+/// - Issue #12: Clean, maintainable code
+class SecurityScreen extends ConsumerWidget {
   const SecurityScreen({super.key});
 
   @override
-  ConsumerState<SecurityScreen> createState() => _SecurityScreenState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final strings = ref.watch(stringsProvider);
+    final securitySettings = ref.watch(securitySettingsProvider);
+    final safeAreaPadding = MediaQuery.of(context).padding;
 
-class _SecurityScreenState extends ConsumerState<SecurityScreen> {
-  bool _faceIdEnabled = false;
-  bool _appLockEnabled = true;
-
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.backgroundSecondary,
       body: SafeArea(
         child: Column(
           children: [
-            // Header - h-[60px], pb-[12px] pt-[8px] px-[20px]
-            _buildHeader(context),
-            // Content - single scroll area on app background
+            // Header
+            _buildHeader(context, strings),
+            // Content
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildSecurityCard(),
-                    const SizedBox(height: 80),
-                  ],
+                padding: EdgeInsets.fromLTRB(
+                  SpacingTokens.spacing20,
+                  SpacingTokens.spacing20,
+                  SpacingTokens.spacing20,
+                  safeAreaPadding.bottom + SpacingTokens.spacing20,
+                ),
+                child: SettingsSection(
+                  padding: EdgeInsets.zero,
+                  child: Column(
+                    children: [
+                      SettingsMenuItem(
+                        icon: PhosphorIconsRegular.deviceMobile,
+                        title: strings.twoFactorAuthentication,
+                        onTap: () => context.push(AppRoutes.twoFactorChangeEmail),
+                      ),
+                      _buildDivider(),
+                      SettingsMenuItem(
+                        icon: PhosphorIconsRegular.key,
+                        title: strings.resetPassword,
+                        onTap: () => context.push(AppRoutes.forgotPassword),
+                      ),
+                      _buildDivider(),
+                      SecurityRow(
+                        icon: PhosphorIconsRegular.scan,
+                        title: strings.useFaceIdToLogin,
+                        value: securitySettings.faceIdEnabled,
+                        onChanged: (value) {
+                          ref.read(settingsProvider.notifier).toggleFaceId(value);
+                        },
+                      ),
+                      _buildDivider(),
+                      SecurityRow(
+                        icon: PhosphorIconsRegular.lock,
+                        title: strings.appLock,
+                        value: securitySettings.appLockEnabled,
+                        onChanged: (value) {
+                          ref.read(settingsProvider.notifier).toggleAppLock(value);
+                        },
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -46,188 +88,60 @@ class _SecurityScreenState extends ConsumerState<SecurityScreen> {
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
-    return SizedBox(
-      height: 60,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Align(
-              alignment: Alignment.centerLeft,
-              child: GestureDetector(
-                onTap: () => context.pop(),
-                child: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    border: Border.all(color: const Color(0xFFEDEDED)),
-                    borderRadius: BorderRadius.circular(10),
-                    color: Colors.white,
-                  ),
-                  child: const Icon(
-                    PhosphorIconsRegular.caretLeft,
-                    size: 20,
-                    color: Color(0xFF101010),
-                  ),
-                ),
+  Widget _buildHeader(BuildContext context, AppStrings strings) {
+    return Container(
+      constraints: const BoxConstraints(
+        minHeight: SpacingTokens.spacing60,
+      ),
+      padding: EdgeInsets.symmetric(
+        horizontal: SpacingTokens.spacing20,
+        vertical: SpacingTokens.spacing8,
+      ),
+      child: Row(
+        children: [
+          // Back button
+          GestureDetector(
+            onTap: () => context.pop(),
+            behavior: HitTestBehavior.opaque,
+            child: Container(
+              width: SpacingTokens.spacing44,
+              height: SpacingTokens.spacing44,
+              decoration: BoxDecoration(
+                border: Border.all(color: const Color(0xFFEDEDED)),
+                borderRadius: SpacingTokens.borderRadius12,
+                color: Colors.white,
               ),
-            ),
-            Text(
-              ref.watch(stringsProvider).security,
-              style: const TextStyle(
-                fontFamily: 'Onest',
-                fontWeight: FontWeight.w500,
-                fontSize: 18,
-                height: 1.5,
+              child: const Icon(
+                PhosphorIconsRegular.caretLeft,
+                size: 20,
                 color: Color(0xFF101010),
               ),
             ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSecurityCard() {
-    final strings = ref.watch(stringsProvider);
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFF5F5F5)),
-      ),
-      child: Column(
-        children: [
-          _buildSecurityRow(
-            icon: PhosphorIconsRegular.deviceMobile,
-            label: strings.twoFactorAuthentication,
-            trailing: const Icon(
-              PhosphorIconsRegular.caretRight,
-              size: 20,
-              color: Color(0xFF878787),
+          ),
+          SpacingTokens.gapH12,
+          // Title
+          Expanded(
+            child: Text(
+              strings.security,
+              style: AppTypography.titleMedium.copyWith(
+                color: const Color(0xFF101010),
+              ),
+              textAlign: TextAlign.center,
             ),
-            onTap: () {
-              context.push(AppRoutes.twoFactorChangeEmail);
-            },
           ),
-          _buildDivider(),
-          _buildSecurityRow(
-            icon: PhosphorIconsRegular.key,
-            label: strings.resetPassword,
-            trailing: const Icon(
-              PhosphorIconsRegular.caretRight,
-              size: 20,
-              color: Color(0xFF878787),
-            ),
-            onTap: () {
-              context.push(AppRoutes.forgotPassword);
-            },
-          ),
-          _buildDivider(),
-          _buildSecurityRow(
-            icon: PhosphorIconsRegular.scan,
-            label: strings.useFaceIdToLogin,
-            trailing: _buildToggle(_faceIdEnabled, (value) {
-              setState(() => _faceIdEnabled = value);
-            }),
-          ),
-          _buildDivider(),
-          _buildSecurityRow(
-            icon: PhosphorIconsRegular.lock,
-            label: strings.appLock,
-            trailing: _buildToggle(_appLockEnabled, (value) {
-              setState(() => _appLockEnabled = value);
-            }),
-          ),
+          // Spacer to balance the back button
+          SizedBox(width: SpacingTokens.spacing44 + SpacingTokens.spacing12),
         ],
       ),
     );
   }
 
-  Widget _buildSecurityRow({
-    required IconData icon,
-    required String label,
-    Widget? trailing,
-    VoidCallback? onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            Icon(
-              icon,
-              size: 20,
-              color: const Color(0xFF101010),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                label,
-                style: TextStyle(
-                  fontFamily: 'Onest',
-                  fontWeight: FontWeight.w500,
-                  fontSize: 14,
-                  height: 1.5,
-                  color: const Color(0xFF101010),
-                ),
-              ),
-            ),
-            if (trailing != null) trailing,
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildDivider() {
-    return Container(
+    return const Divider(
       height: 1,
-      color: const Color(0xFFF5F5F5),
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-    );
-  }
-
-  Widget _buildToggle(bool value, ValueChanged<bool> onChanged) {
-    return GestureDetector(
-      onTap: () => onChanged(!value),
-      child: Container(
-        width: 40,
-        height: 24,
-        padding: const EdgeInsets.all(4),
-        decoration: BoxDecoration(
-          color: value ? AppColors.accent.withOpacity(0.12) : const Color(0xFFF5F5F5),
-          borderRadius: BorderRadius.circular(100),
-        ),
-        child: Stack(
-          children: [
-            AnimatedPositioned(
-              duration: const Duration(milliseconds: 200),
-              curve: Curves.easeInOut,
-              left: value ? 16 : 0,
-              right: value ? 0 : 16,
-              child: Container(
-                width: 16,
-                height: 16,
-                decoration: BoxDecoration(
-                  color: value ? AppColors.accent : Colors.white,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.25),
-                      blurRadius: 10.5,
-                      offset: const Offset(1, 1),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+      thickness: 0.5,
+      indent: SpacingTokens.spacing16,
+      color: Color(0xFFF5F5F5),
     );
   }
 }
